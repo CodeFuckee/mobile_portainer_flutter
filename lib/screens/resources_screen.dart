@@ -150,15 +150,21 @@ class ResourcesScreen extends StatelessWidget {
                       'http://10.0.2.2:8000';
                   final apiKey = prefs.getString('docker_api_key') ?? '';
                   final ignoreSsl = prefs.getString('docker_ignore_ssl') == 'true';
-                  final service = DockerService(baseUrl: url, apiKey: apiKey, ignoreSsl: ignoreSsl);
-                  final result = await service.pullImage(name, tag);
-
+                  
                   if (!context.mounted) return;
 
-                  final message = result['message']?.toString() ?? t.msgImagePullSuccess;
-                  NotifyUtils.showNotify(context, message);
-                  // Note: Auto-refresh of the list isn't easily possible here without a key.
-                  // The user will see the success message and can pull-to-refresh.
+                  // Show progress dialog
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) => _PullProgressDialog(
+                      name: name,
+                      tag: tag,
+                      baseUrl: url,
+                      apiKey: apiKey,
+                      ignoreSsl: ignoreSsl,
+                    ),
+                  );
                 } catch (e) {
                   if (!context.mounted) return;
                   final errMsg = t.msgImagePullFailed(e.toString());
@@ -170,6 +176,153 @@ class ResourcesScreen extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _PullProgressDialog extends StatefulWidget {
+  final String name;
+  final String tag;
+  final String baseUrl;
+  final String apiKey;
+  final bool ignoreSsl;
+
+  const _PullProgressDialog({
+    required this.name,
+    required this.tag,
+    required this.baseUrl,
+    required this.apiKey,
+    required this.ignoreSsl,
+  });
+
+  @override
+  State<_PullProgressDialog> createState() => _PullProgressDialogState();
+}
+
+class _PullProgressDialogState extends State<_PullProgressDialog> {
+  final List<Map<String, String>> _logs = [];
+  final ScrollController _scrollController = ScrollController();
+  late final DockerService _service;
+  late final Stream<dynamic> _stream;
+  bool _isDone = false;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _service = DockerService(
+      baseUrl: widget.baseUrl,
+      apiKey: widget.apiKey,
+      ignoreSsl: widget.ignoreSsl,
+    );
+    _stream = _service.pullImageWs(widget.name, widget.tag);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    
+    return AlertDialog(
+      title: Text(t.titlePullImage),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 300,
+        child: StreamBuilder<dynamic>(
+          stream: _stream,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final data = snapshot.data;
+              String id = '';
+              String message = '';
+              
+              if (data is Map) {
+                if (data.containsKey('error') || data.containsKey('errorDetail')) {
+                   message = 'Error: ${data['error'] ?? data['errorDetail']?['message']}';
+                   _hasError = true;
+                } else {
+                   final status = data['status'] ?? '';
+                   id = data['id'] ?? '';
+                   final progress = data['progress'] ?? '';
+                   
+                   if (id.isNotEmpty) {
+                     message = '$id: $status $progress';
+                   } else {
+                     message = '$status $progress';
+                   }
+                }
+              } else {
+                message = data.toString();
+              }
+              
+              if (message.trim().isNotEmpty) {
+                if (id.isNotEmpty) {
+                  // Check if we already have an entry for this ID
+                  final index = _logs.indexWhere((log) => log['id'] == id);
+                  if (index != -1) {
+                    _logs[index] = {'id': id, 'message': message};
+                  } else {
+                    _logs.add({'id': id, 'message': message});
+                  }
+                } else {
+                   // No ID, just append
+                   _logs.add({'id': '', 'message': message});
+                }
+                
+                // Auto scroll
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (_scrollController.hasClients) {
+                    _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+                  }
+                });
+              }
+            }
+            
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (!_isDone) {
+                _isDone = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                   if (mounted) {
+                     setState(() {});
+                     if (!_hasError) {
+                        await Future.delayed(const Duration(seconds: 1));
+                        if (mounted) {
+                          // ignore: use_build_context_synchronously
+                          Navigator.pop(context);
+                          if(context.mounted){
+                            NotifyUtils.showNotify(context, t.msgImagePullSuccess);
+                          }
+                        }
+                      }
+                   }
+                });
+              }
+            }
+
+            return ListView.builder(
+              controller: _scrollController,
+              itemCount: _logs.length + (_isDone && !_hasError ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == _logs.length) {
+                   return Padding(
+                     padding: const EdgeInsets.only(top: 8.0),
+                     child: Text(
+                       t.msgImagePullSuccess, 
+                       style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                     ),
+                   );
+                }
+                return Text(_logs[index]['message']!, style: const TextStyle(fontSize: 12));
+              },
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(t.actionCancel),
+        ),
+      ],
     );
   }
 }

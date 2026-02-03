@@ -498,6 +498,68 @@ class DockerService {
     }
   }
 
+  Stream<dynamic> pullImageWs(String name, String tag) async* {
+    final cleanBaseUrl = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+
+    String wsUrl = cleanBaseUrl.replaceFirst('http', 'ws');
+    if (cleanBaseUrl.startsWith('https')) {
+       wsUrl = cleanBaseUrl.replaceFirst('https', 'wss');
+    } else if (!cleanBaseUrl.startsWith('http')) {
+       wsUrl = 'ws://$cleanBaseUrl';
+    } else {
+       wsUrl = cleanBaseUrl.replaceFirst('http', 'ws');
+    }
+    
+    // Using /ws/images/pull endpoint
+    wsUrl = '$wsUrl/ws/images/pull?api_key=$apiKey';
+
+    final headers = <String, dynamic>{};
+    if (apiKey != null && apiKey!.isNotEmpty) {
+      headers['X-API-Key'] = apiKey!;
+    }
+
+    WebSocketChannel channel;
+    if (ignoreSsl) {
+      final client = HttpClient();
+      client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      try {
+        final ws = await WebSocket.connect(wsUrl, headers: headers, customClient: client);
+        channel = IOWebSocketChannel(ws);
+      } catch (e) {
+        throw Exception('WebSocket connection failed: $e');
+      }
+    } else {
+      channel = IOWebSocketChannel.connect(Uri.parse(wsUrl), headers: headers);
+    }
+
+    // Send request
+    final request = json.encode({
+      'image': name,
+      'tag': tag,
+    });
+    channel.sink.add(request);
+
+    try {
+      await for (final message in channel.stream) {
+        if (message is String) {
+          try {
+            yield json.decode(message);
+          } catch (_) {
+            yield {'message': message};
+          }
+        } else {
+          yield {'message': message.toString()};
+        }
+      }
+    } catch (e) {
+      yield {'error': e.toString()};
+    } finally {
+      channel.sink.close();
+    }
+  }
+
   Future<String> getContainerLogs(String id) async {
     final cleanBaseUrl = baseUrl.endsWith('/') 
         ? baseUrl.substring(0, baseUrl.length - 1) 
