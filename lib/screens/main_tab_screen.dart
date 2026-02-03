@@ -1,0 +1,162 @@
+import 'package:flutter/material.dart';
+import 'package:mobile_portainer_flutter/utils/notify_utils.dart';
+import 'dashboard_screen.dart';
+import 'home_screen.dart';
+import 'images_screen.dart';
+import 'resources_screen.dart';
+import 'settings_screen.dart';
+import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
+
+class MainTabScreen extends StatefulWidget {
+  const MainTabScreen({super.key});
+
+  @override
+  State<MainTabScreen> createState() => _MainTabScreenState();
+}
+
+class _MainTabScreenState extends State<MainTabScreen> {
+  int _selectedIndex = 0;
+  bool _settingsChanged = false;
+
+  final GlobalKey<DashboardScreenState> _dashboardKey =
+      GlobalKey<DashboardScreenState>();
+  final GlobalKey<HomeScreenState> _containersKey =
+      GlobalKey<HomeScreenState>();
+  final GlobalKey<ImagesScreenState> _imagesKey =
+      GlobalKey<ImagesScreenState>();
+  // Keys for other screens are no longer needed as they are navigated to from Resources
+  final GlobalKey<SettingsScreenState> _settingsKey =
+      GlobalKey<SettingsScreenState>();
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (_settingsChanged) {
+      _dashboardKey.currentState?.refresh();
+      _containersKey.currentState?.refreshAfterSettings();
+      _imagesKey.currentState?.refreshAfterSettings();
+      // Other screens will refresh when opened as they are pushed new
+      _settingsChanged = false;
+    }
+    // Also refresh settings if we switch to it, to ensure it shows correct active server
+    if (index == 3) {
+      _settingsKey.currentState?.refresh();
+    }
+  }
+
+  String _getTitle(AppLocalizations t) {
+    switch (_selectedIndex) {
+      case 0:
+        return t.titleDashboard;
+      case 1:
+        return t.titleContainers;
+      case 2:
+        return t.titleResources;
+      case 3:
+        return t.titleSettings;
+      default:
+        return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_getTitle(t)),
+        actions: [
+          if (_selectedIndex < 2) // Only Dashboard (0) and Containers (1) need refresh here
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                if (_selectedIndex == 0) {
+                  _dashboardKey.currentState?.refresh();
+                } else if (_selectedIndex == 1) {
+                  if (_containersKey.currentState?.isLoading != true) {
+                    _containersKey.currentState?.manualRefresh();
+                  }
+                }
+              },
+            ),
+          const SizedBox(width: 4),
+          Tooltip(
+            message: (_containersKey.currentState?.isWsConnected ?? false)
+                ? t.msgWsConnected
+                : t.msgWsDisconnected,
+            child: Icon(
+              (_containersKey.currentState?.isWsConnected ?? false)
+                  ? Icons.cloud_done
+                  : Icons.cloud_off,
+              color: (_containersKey.currentState?.isWsConnected ?? false)
+                  ? Colors.green
+                  : Colors.grey,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      floatingActionButton: null,
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          DashboardScreen(
+            key: _dashboardKey,
+            onSwitchToContainers: () {
+              // Refresh containers because server might have changed
+              _containersKey.currentState?.refreshAfterSettings();
+              _settingsKey.currentState?.refresh();
+              _onItemTapped(1);
+            },
+            onSwitchToImages: () {
+              // Switch to Resources tab (index 2) then open Images
+              // This navigation is more complex now as Images is inside Resources
+              // For now, let's just switch to Resources tab
+              _settingsKey.currentState?.refresh();
+              _onItemTapped(2);
+            },
+          ),
+          HomeScreen(key: _containersKey),
+          const ResourcesScreen(),
+          SettingsScreen(
+            key: _settingsKey,
+            onSaved: () {
+              _settingsChanged = true;
+              // Go back to Dashboard and refresh
+              _onItemTapped(0);
+              NotifyUtils.showNotify(context, t.msgSettingsSaved);
+            },
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType
+            .fixed, // Ensure all items are shown properly with 4 items
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: [
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.dashboard),
+            label: t.titleDashboard,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.dns),
+            label: t.titleContainers,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.category),
+            label: t.titleResources,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.settings),
+            label: t.titleSettings,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Pull image dialog removed from main screen as Images screen is now nested.
+  // It should be implemented inside ImagesScreen or ResourcesScreen if needed.
+}

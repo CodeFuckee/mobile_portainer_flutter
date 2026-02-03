@@ -1,0 +1,758 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+import 'app_localizations_zh.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations? of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('zh'),
+  ];
+
+  /// No description provided for @appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Docker Monitor'**
+  String get appTitle;
+
+  /// No description provided for @titleContainers.
+  ///
+  /// In en, this message translates to:
+  /// **'Containers'**
+  String get titleContainers;
+
+  /// No description provided for @titleImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get titleImages;
+
+  /// No description provided for @titleSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get titleSettings;
+
+  /// No description provided for @labelDockerApiUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Docker API URL'**
+  String get labelDockerApiUrl;
+
+  /// No description provided for @hintIpPort.
+  ///
+  /// In en, this message translates to:
+  /// **'http://ip:port'**
+  String get hintIpPort;
+
+  /// No description provided for @helperDockerApiUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., http://10.0.2.2:2375 for Android Emulator'**
+  String get helperDockerApiUrl;
+
+  /// No description provided for @buttonSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get buttonSave;
+
+  /// No description provided for @msgSettingsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings saved'**
+  String get msgSettingsSaved;
+
+  /// No description provided for @msgNoContainers.
+  ///
+  /// In en, this message translates to:
+  /// **'No containers found'**
+  String get msgNoContainers;
+
+  /// No description provided for @msgRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get msgRetry;
+
+  /// No description provided for @msgCurrentApi.
+  ///
+  /// In en, this message translates to:
+  /// **'Current API: {api}'**
+  String msgCurrentApi(Object api);
+
+  /// No description provided for @buttonRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get buttonRefresh;
+
+  /// No description provided for @labelLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get labelLanguage;
+
+  /// No description provided for @optionSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System Default'**
+  String get optionSystem;
+
+  /// No description provided for @optionEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get optionEnglish;
+
+  /// No description provided for @optionChinese.
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese'**
+  String get optionChinese;
+
+  /// No description provided for @labelApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'API Key'**
+  String get labelApiKey;
+
+  /// No description provided for @hintApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your API Key (optional)'**
+  String get hintApiKey;
+
+  /// No description provided for @helperApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Required for some Portainer/Docker setups'**
+  String get helperApiKey;
+
+  /// No description provided for @labelStack.
+  ///
+  /// In en, this message translates to:
+  /// **'Stack'**
+  String get labelStack;
+
+  /// No description provided for @labelImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get labelImage;
+
+  /// No description provided for @labelPorts.
+  ///
+  /// In en, this message translates to:
+  /// **'Ports'**
+  String get labelPorts;
+
+  /// No description provided for @labelSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get labelSearch;
+
+  /// No description provided for @hintSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search containers...'**
+  String get hintSearch;
+
+  /// No description provided for @labelStatusAll.
+  ///
+  /// In en, this message translates to:
+  /// **'all'**
+  String get labelStatusAll;
+
+  /// No description provided for @labelStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get labelStatus;
+
+  /// No description provided for @labelFilterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by Status'**
+  String get labelFilterStatus;
+
+  /// No description provided for @labelFilterStack.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by Stack'**
+  String get labelFilterStack;
+
+  /// No description provided for @actionStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get actionStart;
+
+  /// No description provided for @actionStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get actionStop;
+
+  /// No description provided for @actionKill.
+  ///
+  /// In en, this message translates to:
+  /// **'Kill'**
+  String get actionKill;
+
+  /// No description provided for @actionRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart'**
+  String get actionRestart;
+
+  /// No description provided for @actionPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get actionPause;
+
+  /// No description provided for @actionResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get actionResume;
+
+  /// No description provided for @actionRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get actionRemove;
+
+  /// No description provided for @actionCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get actionCancel;
+
+  /// No description provided for @labelTimezone.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get labelTimezone;
+
+  /// No description provided for @optionUtc.
+  ///
+  /// In en, this message translates to:
+  /// **'UTC'**
+  String get optionUtc;
+
+  /// No description provided for @optionUtcPlus8.
+  ///
+  /// In en, this message translates to:
+  /// **'UTC+8 (China)'**
+  String get optionUtcPlus8;
+
+  /// No description provided for @optionUtcPlus9.
+  ///
+  /// In en, this message translates to:
+  /// **'UTC+9 (Japan)'**
+  String get optionUtcPlus9;
+
+  /// No description provided for @optionUtcMinus5.
+  ///
+  /// In en, this message translates to:
+  /// **'UTC-5 (Eastern US)'**
+  String get optionUtcMinus5;
+
+  /// No description provided for @optionUtcPlus1.
+  ///
+  /// In en, this message translates to:
+  /// **'UTC+1 (Central Europe)'**
+  String get optionUtcPlus1;
+
+  /// No description provided for @msgOperationNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation not allowed for this container'**
+  String get msgOperationNotAllowed;
+
+  /// No description provided for @sectionServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers'**
+  String get sectionServers;
+
+  /// No description provided for @buttonAddServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Server'**
+  String get buttonAddServer;
+
+  /// No description provided for @labelServerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Name'**
+  String get labelServerName;
+
+  /// No description provided for @msgServerAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Server added'**
+  String get msgServerAdded;
+
+  /// No description provided for @msgServerUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Server updated'**
+  String get msgServerUpdated;
+
+  /// No description provided for @msgServerDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Server deleted'**
+  String get msgServerDeleted;
+
+  /// No description provided for @msgServerSwitched.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched to {name}'**
+  String msgServerSwitched(Object name);
+
+  /// No description provided for @actionEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get actionEdit;
+
+  /// No description provided for @actionDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get actionDelete;
+
+  /// No description provided for @labelActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get labelActive;
+
+  /// No description provided for @titleDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get titleDashboard;
+
+  /// No description provided for @labelServerInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Info'**
+  String get labelServerInfo;
+
+  /// No description provided for @labelTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get labelTotal;
+
+  /// No description provided for @labelRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get labelRunning;
+
+  /// No description provided for @labelStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get labelStopped;
+
+  /// No description provided for @msgWsConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket Connected'**
+  String get msgWsConnected;
+
+  /// No description provided for @msgWsDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket Disconnected'**
+  String get msgWsDisconnected;
+
+  /// No description provided for @titlePullImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull Image'**
+  String get titlePullImage;
+
+  /// No description provided for @labelImageName.
+  ///
+  /// In en, this message translates to:
+  /// **'Image Name'**
+  String get labelImageName;
+
+  /// No description provided for @hintImageName.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., docker.1ms.run/emqx/emqx'**
+  String get hintImageName;
+
+  /// No description provided for @labelTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag'**
+  String get labelTag;
+
+  /// No description provided for @hintTag.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., latest'**
+  String get hintTag;
+
+  /// No description provided for @buttonPull.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull'**
+  String get buttonPull;
+
+  /// No description provided for @msgImageNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Image name cannot be empty'**
+  String get msgImageNameRequired;
+
+  /// No description provided for @msgImagePullSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Image pulled successfully'**
+  String get msgImagePullSuccess;
+
+  /// No description provided for @msgImagePullFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull failed: {error}'**
+  String msgImagePullFailed(Object error);
+
+  /// No description provided for @tabDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get tabDetails;
+
+  /// No description provided for @tabLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs'**
+  String get tabLogs;
+
+  /// No description provided for @msgNoLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'No logs available'**
+  String get msgNoLogs;
+
+  /// No description provided for @msgLoadingLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading logs...'**
+  String get msgLoadingLogs;
+
+  /// No description provided for @tabOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get tabOverview;
+
+  /// No description provided for @tabNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Network'**
+  String get tabNetwork;
+
+  /// No description provided for @tabStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage'**
+  String get tabStorage;
+
+  /// No description provided for @tabEnv.
+  ///
+  /// In en, this message translates to:
+  /// **'Env'**
+  String get tabEnv;
+
+  /// No description provided for @tabFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get tabFiles;
+
+  /// No description provided for @titleNetworks.
+  ///
+  /// In en, this message translates to:
+  /// **'Networks'**
+  String get titleNetworks;
+
+  /// No description provided for @hintSearchNetworks.
+  ///
+  /// In en, this message translates to:
+  /// **'Search networks...'**
+  String get hintSearchNetworks;
+
+  /// No description provided for @labelDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver'**
+  String get labelDriver;
+
+  /// No description provided for @labelScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Scope'**
+  String get labelScope;
+
+  /// No description provided for @titleStacks.
+  ///
+  /// In en, this message translates to:
+  /// **'Stacks'**
+  String get titleStacks;
+
+  /// No description provided for @hintSearchStacks.
+  ///
+  /// In en, this message translates to:
+  /// **'Search stacks...'**
+  String get hintSearchStacks;
+
+  /// No description provided for @titleVolumes.
+  ///
+  /// In en, this message translates to:
+  /// **'Volumes'**
+  String get titleVolumes;
+
+  /// No description provided for @hintSearchVolumes.
+  ///
+  /// In en, this message translates to:
+  /// **'Search volumes...'**
+  String get hintSearchVolumes;
+
+  /// No description provided for @titleResources.
+  ///
+  /// In en, this message translates to:
+  /// **'Resources'**
+  String get titleResources;
+
+  /// No description provided for @labelMountpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Mountpoint'**
+  String get labelMountpoint;
+
+  /// No description provided for @labelCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created At'**
+  String get labelCreated;
+
+  /// No description provided for @labelOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get labelOptions;
+
+  /// No description provided for @labelLabels.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels'**
+  String get labelLabels;
+
+  /// No description provided for @labelIgnoreSsl.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore SSL Verification'**
+  String get labelIgnoreSsl;
+
+  /// No description provided for @msgErrorLoadingFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading files'**
+  String get msgErrorLoadingFiles;
+
+  /// No description provided for @msgFileSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected file: {name} ({size})'**
+  String msgFileSelected(Object name, Object size);
+
+  /// No description provided for @labelMounted.
+  ///
+  /// In en, this message translates to:
+  /// **'Mounted'**
+  String get labelMounted;
+
+  /// No description provided for @msgFileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'File saved successfully'**
+  String get msgFileSaved;
+
+  /// No description provided for @msgErrorSavingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving file: {error}'**
+  String msgErrorSavingFile(Object error);
+
+  /// No description provided for @labelInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'In Use'**
+  String get labelInUse;
+
+  /// No description provided for @titleNewVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'New Version Available'**
+  String get titleNewVersion;
+
+  /// No description provided for @msgNoUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Your app is up to date'**
+  String get msgNoUpdate;
+
+  /// No description provided for @errCheckUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to check for updates'**
+  String get errCheckUpdate;
+
+  /// No description provided for @actionUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get actionUpdate;
+
+  /// No description provided for @labelGithub.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Repository'**
+  String get labelGithub;
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['en', 'zh'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'zh':
+      return AppLocalizationsZh();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}
