@@ -721,6 +721,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'GitHub Repository'**
   String get labelGithub;
+
+  /// No description provided for @buttonScanQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR Code'**
+  String get buttonScanQr;
+
+  /// No description provided for @msgScanSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanned successfully'**
+  String get msgScanSuccess;
+
+  /// No description provided for @msgInvalidQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid QR format'**
+  String get msgInvalidQr;
+
+  /// No description provided for @buttonManualInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual Input'**
+  String get buttonManualInput;
 }
 
 class _AppLocalizationsDelegate

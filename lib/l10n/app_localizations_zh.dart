@@ -329,4 +329,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get labelGithub => 'GitHub 仓库';
+
+  @override
+  String get buttonScanQr => '扫描二维码';
+
+  @override
+  String get msgScanSuccess => '扫码成功';
+
+  @override
+  String get msgInvalidQr => '二维码格式无效';
+
+  @override
+  String get buttonManualInput => '手动输入';
 }

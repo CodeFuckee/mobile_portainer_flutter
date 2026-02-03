@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_portainer_flutter/screens/qr_scan_screen.dart';
 import 'package:mobile_portainer_flutter/utils/notify_utils.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../main.dart';
 
 import 'package:mobile_portainer_flutter/services/update_service.dart';
@@ -20,6 +23,7 @@ class SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
   String _currentLanguage = 'system';
   String _currentTimezone = 'system';
+  String _versionText = '';
   
   // Server Management
   List<Map<String, String>> _servers = [];
@@ -29,6 +33,7 @@ class SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _loadSettings();
+    _loadVersion();
   }
 
   void refresh() {
@@ -66,6 +71,16 @@ class SettingsScreenState extends State<SettingsScreen> {
       }
       
       _isLoading = false;
+    });
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _versionText = '${info.version}+${info.buildNumber}';
     });
   }
 
@@ -170,6 +185,79 @@ class SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _showAddServerOptions() {
+    final t = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.qr_code_scanner),
+                title: Text(t.buttonScanQr),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const QrScanScreen(),
+                    ),
+                  );
+                  if (result != null && result is String && mounted) {
+                     _processQrResult(result);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: Text(t.buttonManualInput),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showServerDialog();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _processQrResult(String result) {
+    final t = AppLocalizations.of(context)!;
+    try {
+      final data = jsonDecode(result);
+      if (data is Map) {
+        String? url;
+        String? apiKey;
+        
+        if (data.containsKey('url')) {
+          url = data['url'];
+        }
+        if (data.containsKey('apikey')) {
+          apiKey = data['apikey'];
+        } else if (data.containsKey('apiKey')) {
+          apiKey = data['apiKey'];
+        }
+        
+        if (url != null || apiKey != null) {
+          _showServerDialog(
+            server: {
+              'url': url ?? '',
+              'apiKey': apiKey ?? '',
+            },
+            // Pass a flag or null index to indicate new server
+          );
+          NotifyUtils.showNotify(context, t.msgScanSuccess);
+        }
+      }
+    } catch (e) {
+      NotifyUtils.showNotify(context, t.msgInvalidQr);
+    }
+  }
+
   void _showServerDialog({Map<String, String>? server, int? index}) {
     final t = AppLocalizations.of(context)!;
     final nameController = TextEditingController(text: server?['name'] ?? '');
@@ -183,7 +271,7 @@ class SettingsScreenState extends State<SettingsScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setStateDialog) {
           return AlertDialog(
-            title: Text(server == null ? t.buttonAddServer : t.actionEdit),
+            title: Text(server == null || index == null ? t.buttonAddServer : t.actionEdit),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -376,6 +464,16 @@ class SettingsScreenState extends State<SettingsScreen> {
                           onTap: _openGithub,
                           trailing: const Icon(Icons.open_in_new),
                         ),
+                        if (_versionText.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              'v$_versionText',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -393,7 +491,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.add),
-                      onPressed: () => _showServerDialog(),
+                      onPressed: () => _showAddServerOptions(),
                       tooltip: t.buttonAddServer,
                     ),
                   ],

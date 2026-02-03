@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 
 void main() {
@@ -46,7 +48,7 @@ void main() {
   }
 
   if (versionUpdated) {
-    file.writeAsStringSync(newLines.join('\n') + '\n');
+    file.writeAsStringSync('${newLines.join('\n')}\n');
   } else {
     print('Version not found or not updated');
   }

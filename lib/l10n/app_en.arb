@@ -102,5 +102,9 @@
   "msgNoUpdate": "Your app is up to date",
   "errCheckUpdate": "Failed to check for updates",
   "actionUpdate": "Update",
-  "labelGithub": "GitHub Repository"
+  "labelGithub": "GitHub Repository",
+  "buttonScanQr": "Scan QR Code",
+  "msgScanSuccess": "Scanned successfully",
+  "msgInvalidQr": "Invalid QR format",
+  "buttonManualInput": "Manual Input"
 }

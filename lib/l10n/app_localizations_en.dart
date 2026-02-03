@@ -331,4 +331,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelGithub => 'GitHub Repository';
+
+  @override
+  String get buttonScanQr => 'Scan QR Code';
+
+  @override
+  String get msgScanSuccess => 'Scanned successfully';
+
+  @override
+  String get msgInvalidQr => 'Invalid QR format';
+
+  @override
+  String get buttonManualInput => 'Manual Input';
 }

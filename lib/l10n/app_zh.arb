@@ -102,5 +102,9 @@
   "msgNoUpdate": "当前已是最新版本",
   "errCheckUpdate": "检查更新失败",
   "actionUpdate": "立即更新",
-  "labelGithub": "GitHub 仓库"
+  "labelGithub": "GitHub 仓库",
+  "buttonScanQr": "扫描二维码",
+  "msgScanSuccess": "扫码成功",
+  "msgInvalidQr": "二维码格式无效",
+  "buttonManualInput": "手动输入"
 }

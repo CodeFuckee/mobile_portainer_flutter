@@ -142,7 +142,7 @@ class HomeScreenState extends State<HomeScreen> {
       ignoreSsl: _currentIgnoreSsl,
     );
     try {
-      print('Connecting to WebSocket...');
+      debugPrint('Connecting to WebSocket...');
       final channel = await service.connectToEvents();
       _eventChannel = channel;
 
@@ -154,7 +154,7 @@ class HomeScreenState extends State<HomeScreen> {
           });
         }
       } catch (e) {
-        print('WebSocket connection failed (ready): $e');
+        debugPrint('WebSocket connection failed (ready): $e');
         if (mounted && _eventChannel == channel) {
           _scheduleReconnect();
         }
@@ -163,7 +163,7 @@ class HomeScreenState extends State<HomeScreen> {
 
       channel.stream.listen(
         (message) {
-          print('WebSocket received: $message');
+          debugPrint('WebSocket received: $message');
           if (mounted && !_isWsConnected) {
             setState(() {
               _isWsConnected = true;
@@ -172,7 +172,7 @@ class HomeScreenState extends State<HomeScreen> {
           _handleEvent(message);
         },
         onError: (error) {
-          print('WebSocket error: $error');
+          debugPrint('WebSocket error: $error');
           if (_eventChannel != channel) return;
 
           setState(() {
@@ -187,7 +187,7 @@ class HomeScreenState extends State<HomeScreen> {
           _scheduleReconnect();
         },
         onDone: () async {
-          print('WebSocket closed');
+          debugPrint('WebSocket closed');
           if (_eventChannel != channel) return;
 
           setState(() {
@@ -197,7 +197,7 @@ class HomeScreenState extends State<HomeScreen> {
           try {
             await channel.sink.done;
           } catch (e) {
-            print('Wait for sink.done failed: $e');
+            debugPrint('Wait for sink.done failed: $e');
           }
 
           if (_isAuthClose(channel)) {
@@ -210,7 +210,7 @@ class HomeScreenState extends State<HomeScreen> {
         },
       );
     } catch (e) {
-      print('WebSocket connection failed: $e');
+      debugPrint('WebSocket connection failed: $e');
       _scheduleReconnect();
     }
   }
@@ -219,7 +219,7 @@ class HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     if (_reconnectTimer?.isActive ?? false) return;
 
-    print('Scheduling WebSocket reconnection in 3 seconds...');
+    debugPrint('Scheduling WebSocket reconnection in 3 seconds...');
     _reconnectTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
         _connectWebSocket();
@@ -243,7 +243,7 @@ class HomeScreenState extends State<HomeScreen> {
     if (ch is IOWebSocketChannel) {
       final code = ch.closeCode;
       final reason = ch.closeReason?.toLowerCase() ?? '';
-      print('WebSocket Close Code: $code, Reason: $reason');
+      debugPrint('WebSocket Close Code: $code, Reason: $reason');
       
       if (code == 1008) return true;
       if (reason.contains('unauthorized') ||
@@ -260,7 +260,7 @@ class HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     try {
       final event = json.decode(message);
-      print('Parsed event: $event');
+      debugPrint('Parsed event: $event');
 
       // Handle case-insensitive keys and old API format
       String? type = (event['Type'] ?? event['type'])?.toString().toLowerCase();
@@ -278,7 +278,7 @@ class HomeScreenState extends State<HomeScreen> {
       containerId ??= event['id'] ?? event['Id'];
 
       if (type == 'container' && containerId != null && action != null) {
-        print('Container event: $action for $containerId');
+        debugPrint('Container event: $action for $containerId');
 
         if ([
           'start',
@@ -297,7 +297,7 @@ class HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (e) {
-      print('Error parsing event: $e');
+      debugPrint('Error parsing event: $e');
     }
   }
 
@@ -313,7 +313,7 @@ class HomeScreenState extends State<HomeScreen> {
 
   void _updateContainerStatus(String id, String action) {
     if (!mounted) return;
-    print('Updating status for $id to $action');
+    debugPrint('Updating status for $id to $action');
     setState(() {
       // ID in event is full ID (64 chars), container.id might be short (12 chars) or full
       final index = _allContainers.indexWhere(
@@ -321,7 +321,7 @@ class HomeScreenState extends State<HomeScreen> {
       );
 
       if (index != -1) {
-        print('Found container at index $index: ${_allContainers[index].name}');
+        debugPrint('Found container at index $index: ${_allContainers[index].name}');
         String newStatus = _allContainers[index].status;
         if (action == 'start' || action == 'unpause' || action == 'restart') {
           newStatus = 'running';
@@ -336,7 +336,7 @@ class HomeScreenState extends State<HomeScreen> {
         );
         _filterContainers();
       } else {
-        print('Container $id not found in list');
+        debugPrint('Container $id not found in list');
       }
     });
   }
