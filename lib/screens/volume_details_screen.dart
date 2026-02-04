@@ -4,6 +4,8 @@ import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import '../services/docker_service.dart';
 import '../utils/notify_utils.dart';
 
+import 'container_details_screen.dart';
+
 class VolumeDetailsScreen extends StatefulWidget {
   final String volumeName;
   final String apiUrl;
@@ -108,10 +110,70 @@ class _VolumeDetailsScreenState extends State<VolumeDetailsScreen> {
           const SizedBox(height: 16),
           if (_volumeDetails!['Labels'] != null && (_volumeDetails!['Labels'] as Map).isNotEmpty)
             _buildLabelsCard(t, _volumeDetails!['Labels']),
-           if (_volumeDetails!['Options'] != null && (_volumeDetails!['Options'] as Map).isNotEmpty)
+          if (_volumeDetails!['Options'] != null && (_volumeDetails!['Options'] as Map).isNotEmpty)
             _buildOptionsCard(t, _volumeDetails!['Options']),
+          if (_volumeDetails!['used_by_containers'] != null && (_volumeDetails!['used_by_containers'] as List).isNotEmpty)
+            _buildContainersCard(t, _volumeDetails!['used_by_containers']),
         ],
       ),
+    );
+  }
+
+  Widget _buildContainersCard(AppLocalizations t, List<dynamic> containers) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Text(t.labelUsedByContainers, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: containers.map((container) {
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ContainerDetailsScreen(
+                          containerId: container.toString(),
+                          containerName: container.toString(),
+                          apiUrl: widget.apiUrl,
+                          apiKey: widget.apiKey,
+                          ignoreSsl: widget.ignoreSsl,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.view_in_ar, size: 16, color: Colors.blue),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            container.toString(),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -1,4 +1,6 @@
-![mobile_portainer_flutter-brand](https://raw.githubusercontent.com/CodeFuckee/mobile_portainer_flutter/refs/heads/main/icon.png)
+<div style="text-align: center;">
+  <img src="https://raw.githubusercontent.com/CodeFuckee/mobile_portainer_flutter/refs/heads/main/icon.png" />
+</div>
 
 # Mobile Portainer Flutter
 

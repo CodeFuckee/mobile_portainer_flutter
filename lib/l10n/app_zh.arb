@@ -117,5 +117,9 @@
   "hintCommand": "例如：docker run -d -p 80:80 nginx",
   "msgContainerStarted": "容器启动成功：{id}",
   "msgRunContainerFailed": "运行容器失败：{error}",
-  "actionRun": "运行"
+  "actionRun": "运行",
+  "labelUsedByContainers": "被容器使用",
+    "filterAll": "全部",
+    "filterInUse": "使用中",
+    "filterUnused": "未使用"
 }

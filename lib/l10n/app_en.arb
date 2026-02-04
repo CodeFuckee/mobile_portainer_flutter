@@ -117,5 +117,9 @@
   "hintCommand": "e.g., docker run -d -p 80:80 nginx",
   "msgContainerStarted": "Container started successfully: {id}",
   "msgRunContainerFailed": "Failed to run container: {error}",
-  "actionRun": "Run"
+  "actionRun": "Run",
+  "labelUsedByContainers": "Used By Containers",
+    "filterAll": "All",
+    "filterInUse": "In Use",
+    "filterUnused": "Unused"
 }

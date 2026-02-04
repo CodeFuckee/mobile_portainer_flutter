@@ -5,6 +5,8 @@ import '../services/docker_service.dart';
 import '../models/docker_volume.dart';
 import 'volume_details_screen.dart';
 
+enum VolumeFilter { all, inUse, unused }
+
 class VolumesScreen extends StatefulWidget {
   const VolumesScreen({super.key});
 
@@ -18,6 +20,7 @@ class VolumesScreenState extends State<VolumesScreen> {
   List<DockerVolume> _filteredVolumes = [];
   bool _isLoading = false;
   bool _isCompactMode = false;
+  VolumeFilter _currentFilter = VolumeFilter.all;
   String? _error;
   String _currentApiUrl = '';
   String _currentApiKey = '';
@@ -83,7 +86,13 @@ class VolumesScreenState extends State<VolumesScreen> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredVolumes = _allVolumes.where((volume) {
-        return query.isEmpty || volume.name.toLowerCase().contains(query);
+        final matchesQuery = query.isEmpty || volume.name.toLowerCase().contains(query);
+        final matchesFilter = switch (_currentFilter) {
+          VolumeFilter.all => true,
+          VolumeFilter.inUse => volume.inUse,
+          VolumeFilter.unused => !volume.inUse,
+        };
+        return matchesQuery && matchesFilter;
       }).toList();
     });
   }
@@ -150,6 +159,48 @@ class VolumesScreenState extends State<VolumesScreen> {
                     ),
                   ),
                   onChanged: _onSearchChanged,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Material(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[800]
+                    : Colors.grey[200],
+                borderRadius: BorderRadius.circular(16.0),
+                child: PopupMenuButton<VolumeFilter>(
+                  tooltip: t.filterAll, // Using "All" as generic tooltip or maybe just "Filter" if available
+                  initialValue: _currentFilter,
+                  onSelected: (VolumeFilter item) {
+                    setState(() {
+                      _currentFilter = item;
+                      _filterVolumes();
+                    });
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<VolumeFilter>>[
+                    PopupMenuItem<VolumeFilter>(
+                      value: VolumeFilter.all,
+                      child: Text(t.filterAll),
+                    ),
+                    PopupMenuItem<VolumeFilter>(
+                      value: VolumeFilter.inUse,
+                      child: Text(t.filterInUse),
+                    ),
+                    PopupMenuItem<VolumeFilter>(
+                      value: VolumeFilter.unused,
+                      child: Text(t.filterUnused),
+                    ),
+                  ],
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.filter_list,
+                      color: _currentFilter != VolumeFilter.all 
+                          ? Colors.blue 
+                          : Theme.of(context).iconTheme.color,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),

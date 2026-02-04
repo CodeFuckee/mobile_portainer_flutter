@@ -378,4 +378,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get actionRun => '运行';
+
+  @override
+  String get labelUsedByContainers => '被容器使用';
+
+  @override
+  String get filterAll => '全部';
+
+  @override
+  String get filterInUse => '使用中';
+
+  @override
+  String get filterUnused => '未使用';
 }

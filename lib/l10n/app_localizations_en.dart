@@ -381,4 +381,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionRun => 'Run';
+
+  @override
+  String get labelUsedByContainers => 'Used By Containers';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterInUse => 'In Use';
+
+  @override
+  String get filterUnused => 'Unused';
 }

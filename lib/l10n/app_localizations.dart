@@ -811,6 +811,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Run'**
   String get actionRun;
+
+  /// No description provided for @labelUsedByContainers.
+  ///
+  /// In en, this message translates to:
+  /// **'Used By Containers'**
+  String get labelUsedByContainers;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @filterInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'In Use'**
+  String get filterInUse;
+
+  /// No description provided for @filterUnused.
+  ///
+  /// In en, this message translates to:
+  /// **'Unused'**
+  String get filterUnused;
 }
 
 class _AppLocalizationsDelegate
