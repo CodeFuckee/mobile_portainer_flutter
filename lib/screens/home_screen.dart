@@ -502,6 +502,87 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void showRunContainerDialog() {
+    final t = AppLocalizations.of(context)!;
+    final commandController = TextEditingController();
+    bool isRunning = false;
+    String? error;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(t.titleRunContainer),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: commandController,
+                    decoration: InputDecoration(
+                      labelText: t.labelCommand,
+                      hintText: t.hintCommand,
+                      errorText: error,
+                    ),
+                    maxLines: 3,
+                  ),
+                  if (isRunning)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 16.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isRunning ? null : () => Navigator.pop(context),
+                  child: Text(t.actionCancel),
+                ),
+                ElevatedButton(
+                  onPressed: isRunning
+                      ? null
+                      : () async {
+                          if (commandController.text.isEmpty) return;
+
+                          setState(() {
+                            isRunning = true;
+                            error = null;
+                          });
+
+                          final service = DockerService(
+                            baseUrl: _currentApiUrl,
+                            apiKey: _currentApiKey,
+                            ignoreSsl: _currentIgnoreSsl,
+                          );
+
+                          try {
+                            final result = await service.runContainer(commandController.text);
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              String msg = t.msgContainerStarted(result['name'] ?? result['short_id'] ?? result['id'] ?? 'unknown');
+                              NotifyUtils.showNotify(context, msg);
+                              _fetchContainers();
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              setState(() {
+                                isRunning = false;
+                                error = e.toString().replaceAll('Exception: ', '');
+                              });
+                            }
+                          }
+                        },
+                  child: Text(t.actionRun),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;

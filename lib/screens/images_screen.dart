@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/docker_image.dart';
 import '../services/docker_service.dart';
 import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
+import 'package:mobile_portainer_flutter/utils/notify_utils.dart';
 import 'image_details_screen.dart';
 
 class ImagesScreen extends StatefulWidget {
@@ -112,6 +113,62 @@ class ImagesScreenState extends State<ImagesScreen> {
   String _formatDate(int timestamp) {
     final date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(date);
+  }
+
+  Future<void> _confirmDelete(DockerImage image) async {
+    final t = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(t.titleConfirmDelete),
+        content: Text(t.msgConfirmDeleteImage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(t.actionCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(t.actionDelete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      _deleteImage(image);
+    }
+  }
+
+  Future<void> _deleteImage(DockerImage image) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final service = DockerService(
+      baseUrl: _currentApiUrl,
+      apiKey: _currentApiKey,
+      ignoreSsl: _currentIgnoreSsl,
+    );
+    try {
+      final result = image.repoTags.isNotEmpty
+          ? await service.deleteImage(image.repoTags.first)
+          : await service.deleteImage(image.id);
+      
+      if (mounted) {
+        String message = result['message'] ?? 'Image removed successfully';
+        NotifyUtils.showNotify(context, message);
+        _fetchImages();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        NotifyUtils.showNotify(context, 'Error: $e');
+      }
+    }
   }
 
   @override
@@ -272,8 +329,11 @@ class ImagesScreenState extends State<ImagesScreen> {
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        trailing: image.inUse
-                            ? Container(
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (image.inUse)
+                              Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.green.withValues(alpha: .1),
@@ -288,8 +348,13 @@ class ImagesScreenState extends State<ImagesScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              )
-                            : null,
+                              ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _confirmDelete(image),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }
@@ -353,6 +418,10 @@ class ImagesScreenState extends State<ImagesScreen> {
                                                 ),
                                               ),
                                             ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                                            onPressed: () => _confirmDelete(image),
+                                          ),
                                         ],
                                       ),
                                       const SizedBox(height: 4),

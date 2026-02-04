@@ -316,6 +316,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get labelInUse => '已使用';
 
   @override
+  String get titleConfirmDelete => '确认删除';
+
+  @override
+  String get msgConfirmDeleteImage => '确定要删除此镜像吗？';
+
+  @override
   String get titleNewVersion => '发现新版本';
 
   @override
@@ -341,4 +347,26 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get buttonManualInput => '手动输入';
+
+  @override
+  String get titleRunContainer => '运行容器';
+
+  @override
+  String get labelCommand => '命令';
+
+  @override
+  String get hintCommand => '例如：docker run -d -p 80:80 nginx';
+
+  @override
+  String msgContainerStarted(Object id) {
+    return '容器启动成功：$id';
+  }
+
+  @override
+  String msgRunContainerFailed(Object error) {
+    return '运行容器失败：$error';
+  }
+
+  @override
+  String get actionRun => '运行';
 }

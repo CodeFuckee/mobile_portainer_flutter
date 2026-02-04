@@ -97,7 +97,14 @@ class _MainTabScreenState extends State<MainTabScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      floatingActionButton: null,
+      floatingActionButton: _selectedIndex == 1
+          ? FloatingActionButton(
+              onPressed: () {
+                _containersKey.currentState?.showRunContainerDialog();
+              },
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: IndexedStack(
         index: _selectedIndex,
         children: [

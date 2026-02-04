@@ -18,7 +18,7 @@ A powerful mobile management client for Docker environments, built with Flutter.
 
 ### 📦 Container Management
 - **List & Filter**: View all containers or filter by status (Running, Stopped, Exited, etc.) and Stacks.
-- **Actions**: Start, Stop, Restart, Pause, Unpause, Kill, and Remove containers.
+- **Actions**: Add, Start, Stop, Restart, Pause, Unpause, Kill, and Remove containers.
 - **Details**: Deep dive into container configuration:
   - **Inspect**: Full JSON inspection.
   - **Stats**: Real-time resource usage.

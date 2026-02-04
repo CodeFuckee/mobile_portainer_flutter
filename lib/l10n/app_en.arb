@@ -98,6 +98,8 @@
   "msgFileSaved": "File saved successfully",
   "msgErrorSavingFile": "Error saving file: {error}",
   "labelInUse": "In Use",
+  "titleConfirmDelete": "Confirm Delete",
+  "msgConfirmDeleteImage": "Are you sure you want to delete this image?",
   "titleNewVersion": "New Version Available",
   "msgNoUpdate": "Your app is up to date",
   "errCheckUpdate": "Failed to check for updates",
@@ -106,5 +108,11 @@
   "buttonScanQr": "Scan QR Code",
   "msgScanSuccess": "Scanned successfully",
   "msgInvalidQr": "Invalid QR format",
-  "buttonManualInput": "Manual Input"
+  "buttonManualInput": "Manual Input",
+  "titleRunContainer": "Run Container",
+  "labelCommand": "Command",
+  "hintCommand": "e.g., docker run -d -p 80:80 nginx",
+  "msgContainerStarted": "Container started successfully: {id}",
+  "msgRunContainerFailed": "Failed to run container: {error}",
+  "actionRun": "Run"
 }

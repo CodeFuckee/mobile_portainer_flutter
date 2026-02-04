@@ -692,6 +692,18 @@ abstract class AppLocalizations {
   /// **'In Use'**
   String get labelInUse;
 
+  /// No description provided for @titleConfirmDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Delete'**
+  String get titleConfirmDelete;
+
+  /// No description provided for @msgConfirmDeleteImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this image?'**
+  String get msgConfirmDeleteImage;
+
   /// No description provided for @titleNewVersion.
   ///
   /// In en, this message translates to:
@@ -745,6 +757,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manual Input'**
   String get buttonManualInput;
+
+  /// No description provided for @titleRunContainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Run Container'**
+  String get titleRunContainer;
+
+  /// No description provided for @labelCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'Command'**
+  String get labelCommand;
+
+  /// No description provided for @hintCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., docker run -d -p 80:80 nginx'**
+  String get hintCommand;
+
+  /// No description provided for @msgContainerStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Container started successfully: {id}'**
+  String msgContainerStarted(Object id);
+
+  /// No description provided for @msgRunContainerFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to run container: {error}'**
+  String msgRunContainerFailed(Object error);
+
+  /// No description provided for @actionRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Run'**
+  String get actionRun;
 }
 
 class _AppLocalizationsDelegate

@@ -78,12 +78,8 @@ class ResourcesScreen extends StatelessWidget {
                     body: item.screen,
                     floatingActionButton: item.hasFab
                         ? FloatingActionButton(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(36),
-                            ),
                             onPressed: () => _showPullImageDialog(context),
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            child: const Icon(Icons.add, color: Colors.white, size: 28),
+                            child: const Icon(Icons.add),
                           )
                         : null,
                   ),

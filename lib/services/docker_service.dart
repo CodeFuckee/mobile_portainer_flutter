@@ -218,6 +218,36 @@ class DockerService {
     }
   }
 
+  Future<Map<String, dynamic>> deleteImage(String id) async {
+    final cleanBaseUrl = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    final url = Uri.parse('$cleanBaseUrl/images/$id');
+
+    final headers = <String, String>{};
+    if (apiKey != null && apiKey!.isNotEmpty) {
+      headers['X-API-Key'] = apiKey!;
+    }
+
+    try {
+      final response = await _client.delete(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        } else if (decoded is List) {
+           return {'status': 'success', 'details': decoded};
+        }
+        return {'status': 'success'};
+      } else {
+        throw Exception('Failed to delete image: ${response.statusCode} ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
   Future<Map<String, dynamic>> pullImage(String name, String tag) async {
     final cleanBaseUrl = baseUrl.endsWith('/')
         ? baseUrl.substring(0, baseUrl.length - 1)
@@ -383,6 +413,41 @@ class DockerService {
   Future<void> pauseContainer(String id) => _performContainerAction(id, 'pause');
   Future<void> resumeContainer(String id) => _performContainerAction(id, 'unpause');
   
+  Future<Map<String, dynamic>> runContainer(String command) async {
+    final cleanBaseUrl = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    final url = Uri.parse('$cleanBaseUrl/containers/run');
+
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+    };
+    if (apiKey != null && apiKey!.isNotEmpty) {
+      headers['X-API-Key'] = apiKey!;
+    }
+
+    final body = json.encode({'command': command});
+
+    try {
+      final response = await _client.post(url, headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        // Try to decode error body if possible
+        try {
+           final errorBody = json.decode(response.body);
+           if (errorBody is Map<String, dynamic> && errorBody.containsKey('detail')) {
+             throw Exception(errorBody['detail']);
+           }
+        } catch (_) {}
+        throw Exception('Failed to run container: ${response.statusCode} ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
   Future<void> removeContainer(String id) async {
       final cleanBaseUrl = baseUrl.endsWith('/') 
         ? baseUrl.substring(0, baseUrl.length - 1) 

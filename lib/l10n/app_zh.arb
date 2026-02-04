@@ -98,6 +98,8 @@
   "msgFileSaved": "文件保存成功",
   "msgErrorSavingFile": "保存文件失败: {error}",
   "labelInUse": "已使用",
+  "titleConfirmDelete": "确认删除",
+  "msgConfirmDeleteImage": "确定要删除此镜像吗？",
   "titleNewVersion": "发现新版本",
   "msgNoUpdate": "当前已是最新版本",
   "errCheckUpdate": "检查更新失败",
@@ -106,5 +108,11 @@
   "buttonScanQr": "扫描二维码",
   "msgScanSuccess": "扫码成功",
   "msgInvalidQr": "二维码格式无效",
-  "buttonManualInput": "手动输入"
+  "buttonManualInput": "手动输入",
+  "titleRunContainer": "运行容器",
+  "labelCommand": "命令",
+  "hintCommand": "例如：docker run -d -p 80:80 nginx",
+  "msgContainerStarted": "容器启动成功：{id}",
+  "msgRunContainerFailed": "运行容器失败：{error}",
+  "actionRun": "运行"
 }

@@ -318,6 +318,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelInUse => 'In Use';
 
   @override
+  String get titleConfirmDelete => 'Confirm Delete';
+
+  @override
+  String get msgConfirmDeleteImage =>
+      'Are you sure you want to delete this image?';
+
+  @override
   String get titleNewVersion => 'New Version Available';
 
   @override
@@ -343,4 +350,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get buttonManualInput => 'Manual Input';
+
+  @override
+  String get titleRunContainer => 'Run Container';
+
+  @override
+  String get labelCommand => 'Command';
+
+  @override
+  String get hintCommand => 'e.g., docker run -d -p 80:80 nginx';
+
+  @override
+  String msgContainerStarted(Object id) {
+    return 'Container started successfully: $id';
+  }
+
+  @override
+  String msgRunContainerFailed(Object error) {
+    return 'Failed to run container: $error';
+  }
+
+  @override
+  String get actionRun => 'Run';
 }
