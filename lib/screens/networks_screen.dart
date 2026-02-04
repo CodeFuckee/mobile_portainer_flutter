@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import '../models/docker_network.dart';
 import '../services/docker_service.dart';
+import 'network_details_screen.dart';
 
 class NetworksScreen extends StatefulWidget {
   const NetworksScreen({super.key});
@@ -224,7 +225,18 @@ class NetworksScreenState extends State<NetworksScreen> {
                               vertical: 0,
                             ),
                             onTap: () {
-                              // Optional: Navigate to details if needed
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NetworkDetailsScreen(
+                                    networkId: network.id,
+                                    networkName: network.name,
+                                    apiUrl: _currentApiUrl,
+                                    apiKey: _currentApiKey,
+                                    ignoreSsl: _currentIgnoreSsl,
+                                  ),
+                                ),
+                              );
                             },
                             title: Text(
                               network.name,
@@ -242,7 +254,18 @@ class NetworksScreenState extends State<NetworksScreen> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
                           onTap: () {
-                            // Optional: Navigate to details if needed
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NetworkDetailsScreen(
+                                  networkId: network.id,
+                                  networkName: network.name,
+                                  apiUrl: _currentApiUrl,
+                                  apiKey: _currentApiKey,
+                                  ignoreSsl: _currentIgnoreSsl,
+                                ),
+                              ),
+                            );
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),

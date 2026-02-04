@@ -56,6 +56,50 @@ class _VolumeDetailsScreenState extends State<VolumeDetailsScreen> {
     }
   }
 
+  Future<void> _deleteVolume() async {
+    final t = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(t.titleConfirmDelete),
+        content: Text(t.msgConfirmDeleteVolume),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(t.actionCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(t.actionDelete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final service = DockerService(baseUrl: widget.apiUrl, apiKey: widget.apiKey, ignoreSsl: widget.ignoreSsl);
+      try {
+        await service.deleteVolume(widget.volumeName);
+        if (mounted) {
+          NotifyUtils.showNotify(context, t.msgVolumeDeleted);
+          Navigator.pop(context, true); // Return true to indicate deletion
+        }
+      } catch (e) {
+        if (mounted) {
+          NotifyUtils.showNotify(context, t.msgDeleteVolumeFailed(e.toString()));
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -64,6 +108,11 @@ class _VolumeDetailsScreenState extends State<VolumeDetailsScreen> {
       appBar: AppBar(
         title: Text(widget.volumeName),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: _deleteVolume,
+            tooltip: t.actionDelete,
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _fetchDetails,

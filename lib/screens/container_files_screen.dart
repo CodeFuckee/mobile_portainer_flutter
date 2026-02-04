@@ -335,52 +335,8 @@ class _ContainerFilesScreenState extends State<ContainerFilesScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    final canGoUp = _currentPath != '/';
 
-    return Column(
-      children: [
-        // Custom Header for file navigation
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            border: Border(
-              bottom: BorderSide(
-                color: Theme.of(context).dividerColor,
-                width: 1,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_upward),
-                onPressed: canGoUp ? _navigateUp : null,
-                color: canGoUp ? Theme.of(context).iconTheme.color : Colors.grey.withValues(alpha: .3),
-              ),
-              Expanded(
-                child: Text(
-                  _currentPath,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 14,
-                    fontFamily: 'monospace',
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _fetchFiles,
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: _buildBody(t),
-        ),
-      ],
-    );
+    return _buildBody(t);
   }
 
   Widget _buildBody(AppLocalizations t) {

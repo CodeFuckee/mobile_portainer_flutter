@@ -121,5 +121,16 @@
   "labelUsedByContainers": "Used By Containers",
     "filterAll": "All",
     "filterInUse": "In Use",
-    "filterUnused": "Unused"
+    "filterUnused": "Unused",
+    "msgConfirmDeleteVolume": "Are you sure you want to delete this volume?",
+    "msgVolumeDeleted": "Volume deleted successfully",
+    "msgDeleteVolumeFailed": "Failed to delete volume: {error}",
+  "titleNetworkDetails": "Network Details",
+  "labelSubnet": "Subnet",
+  "labelGateway": "Gateway",
+  "labelInternal": "Internal",
+  "labelAttachable": "Attachable",
+  "labelIngress": "Ingress",
+  "labelIPAM": "IPAM",
+  "labelEnableIPv6": "Enable IPv6"
 }

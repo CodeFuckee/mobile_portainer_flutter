@@ -121,5 +121,16 @@
   "labelUsedByContainers": "被容器使用",
     "filterAll": "全部",
     "filterInUse": "使用中",
-    "filterUnused": "未使用"
+    "filterUnused": "未使用",
+    "msgConfirmDeleteVolume": "确定要删除此存储卷吗？",
+    "msgVolumeDeleted": "存储卷删除成功",
+    "msgDeleteVolumeFailed": "删除存储卷失败: {error}",
+  "titleNetworkDetails": "网络详情",
+  "labelSubnet": "子网",
+  "labelGateway": "网关",
+  "labelInternal": "内部",
+  "labelAttachable": "可附加",
+  "labelIngress": "入口",
+  "labelIPAM": "IPAM",
+  "labelEnableIPv6": "启用 IPv6"
 }

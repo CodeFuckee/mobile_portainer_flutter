@@ -393,4 +393,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterUnused => 'Unused';
+
+  @override
+  String get msgConfirmDeleteVolume =>
+      'Are you sure you want to delete this volume?';
+
+  @override
+  String get msgVolumeDeleted => 'Volume deleted successfully';
+
+  @override
+  String msgDeleteVolumeFailed(Object error) {
+    return 'Failed to delete volume: $error';
+  }
+
+  @override
+  String get titleNetworkDetails => 'Network Details';
+
+  @override
+  String get labelSubnet => 'Subnet';
+
+  @override
+  String get labelGateway => 'Gateway';
+
+  @override
+  String get labelInternal => 'Internal';
+
+  @override
+  String get labelAttachable => 'Attachable';
+
+  @override
+  String get labelIngress => 'Ingress';
+
+  @override
+  String get labelIPAM => 'IPAM';
+
+  @override
+  String get labelEnableIPv6 => 'Enable IPv6';
 }

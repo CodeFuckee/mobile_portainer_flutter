@@ -8,6 +8,8 @@ import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import 'container_logs_screen.dart';
 import 'volume_details_screen.dart';
 import 'container_files_screen.dart';
+import 'image_details_screen.dart';
+import 'network_details_screen.dart';
 
 class ContainerDetailsScreen extends StatefulWidget {
   final String containerId;
@@ -294,7 +296,29 @@ class _ContainerDetailsScreenState extends State<ContainerDetailsScreen> {
             showCopyButton: true,
             copyValue: details['Id']?.toString() ?? '',
           ),
-          _buildInfoRow('Image', config['Image'] ?? ''),
+          _buildInfoRow(
+            'Image',
+            config['Image'] ?? '',
+            onTap: (config['Image'] != null && config['Image'].toString().isNotEmpty)
+                ? () {
+                    final imageId = details['Image']?.toString() ?? '';
+                    final imageName = config['Image']?.toString() ?? imageId;
+                    if (imageName.isEmpty && imageId.isEmpty) return;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ImageDetailsScreen(
+                          imageId: imageId.isNotEmpty ? imageId : imageName,
+                          imageName: imageName,
+                          apiUrl: widget.apiUrl,
+                          apiKey: widget.apiKey,
+                          ignoreSsl: widget.ignoreSsl,
+                        ),
+                      ),
+                    );
+                  }
+                : null,
+          ),
           _buildInfoRow('Hostname', config['Hostname'] ?? ''),
           _buildInfoRow('Driver', details['Driver'] ?? ''),
           _buildInfoRow('Created', _formatDate(details['Created'])),
@@ -713,6 +737,25 @@ class _ContainerDetailsScreenState extends State<ContainerDetailsScreen> {
           widgets.add(_buildSectionTitle('Network: $name'));
           widgets.add(
             _buildInfoCard([
+              _buildInfoRow(
+                'Name',
+                name,
+                onTap: () {
+                  final netId = (data['NetworkID'] ?? '').toString();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NetworkDetailsScreen(
+                        networkId: netId.isNotEmpty ? netId : name,
+                        networkName: name,
+                        apiUrl: widget.apiUrl,
+                        apiKey: widget.apiKey,
+                        ignoreSsl: widget.ignoreSsl,
+                      ),
+                    ),
+                  );
+                },
+              ),
               _buildInfoRow('IP Address', data['IPAddress'] ?? ''),
               _buildInfoRow('Gateway', data['Gateway'] ?? ''),
               _buildInfoRow('Mac Address', data['MacAddress'] ?? ''),
@@ -721,6 +764,23 @@ class _ContainerDetailsScreenState extends State<ContainerDetailsScreen> {
                 _buildInfoRow(
                   'Network ID',
                   data['NetworkID'].toString().substring(0, 12),
+                  showCopyButton: true,
+                  copyValue: data['NetworkID'].toString(),
+                  onTap: () {
+                    final netId = data['NetworkID'].toString();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NetworkDetailsScreen(
+                          networkId: netId,
+                          networkName: name,
+                          apiUrl: widget.apiUrl,
+                          apiKey: widget.apiKey,
+                          ignoreSsl: widget.ignoreSsl,
+                        ),
+                      ),
+                    );
+                  },
                 ),
             ]),
           );

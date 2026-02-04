@@ -835,6 +835,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unused'**
   String get filterUnused;
+
+  /// No description provided for @msgConfirmDeleteVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this volume?'**
+  String get msgConfirmDeleteVolume;
+
+  /// No description provided for @msgVolumeDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume deleted successfully'**
+  String get msgVolumeDeleted;
+
+  /// No description provided for @msgDeleteVolumeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete volume: {error}'**
+  String msgDeleteVolumeFailed(Object error);
+
+  /// No description provided for @titleNetworkDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Network Details'**
+  String get titleNetworkDetails;
+
+  /// No description provided for @labelSubnet.
+  ///
+  /// In en, this message translates to:
+  /// **'Subnet'**
+  String get labelSubnet;
+
+  /// No description provided for @labelGateway.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway'**
+  String get labelGateway;
+
+  /// No description provided for @labelInternal.
+  ///
+  /// In en, this message translates to:
+  /// **'Internal'**
+  String get labelInternal;
+
+  /// No description provided for @labelAttachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachable'**
+  String get labelAttachable;
+
+  /// No description provided for @labelIngress.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingress'**
+  String get labelIngress;
+
+  /// No description provided for @labelIPAM.
+  ///
+  /// In en, this message translates to:
+  /// **'IPAM'**
+  String get labelIPAM;
+
+  /// No description provided for @labelEnableIPv6.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable IPv6'**
+  String get labelEnableIPv6;
 }
 
 class _AppLocalizationsDelegate

@@ -390,4 +390,39 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterUnused => '未使用';
+
+  @override
+  String get msgConfirmDeleteVolume => '确定要删除此存储卷吗？';
+
+  @override
+  String get msgVolumeDeleted => '存储卷删除成功';
+
+  @override
+  String msgDeleteVolumeFailed(Object error) {
+    return '删除存储卷失败: $error';
+  }
+
+  @override
+  String get titleNetworkDetails => '网络详情';
+
+  @override
+  String get labelSubnet => '子网';
+
+  @override
+  String get labelGateway => '网关';
+
+  @override
+  String get labelInternal => '内部';
+
+  @override
+  String get labelAttachable => '可附加';
+
+  @override
+  String get labelIngress => '入口';
+
+  @override
+  String get labelIPAM => 'IPAM';
+
+  @override
+  String get labelEnableIPv6 => '启用 IPv6';
 }

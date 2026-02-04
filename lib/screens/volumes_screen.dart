@@ -4,6 +4,7 @@ import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import '../services/docker_service.dart';
 import '../models/docker_volume.dart';
 import 'volume_details_screen.dart';
+import '../utils/notify_utils.dart';
 
 enum VolumeFilter { all, inUse, unused }
 
@@ -101,6 +102,50 @@ class VolumesScreenState extends State<VolumesScreen> {
     setState(() {
       _filterVolumes();
     });
+  }
+
+  Future<void> _deleteVolume(DockerVolume volume) async {
+    final t = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(t.titleConfirmDelete),
+        content: Text(t.msgConfirmDeleteVolume),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(t.actionCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(t.actionDelete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final service = DockerService(baseUrl: _currentApiUrl, apiKey: _currentApiKey, ignoreSsl: _currentIgnoreSsl);
+      try {
+        await service.deleteVolume(volume.name);
+        if (mounted) {
+          NotifyUtils.showNotify(context, t.msgVolumeDeleted);
+          _fetchVolumes();
+        }
+      } catch (e) {
+        if (mounted) {
+          NotifyUtils.showNotify(context, t.msgDeleteVolumeFailed(e.toString()));
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    }
   }
 
   @override
@@ -259,8 +304,8 @@ class VolumesScreenState extends State<VolumesScreen> {
                               horizontal: 16,
                               vertical: 0,
                             ),
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => VolumeDetailsScreen(
@@ -271,6 +316,9 @@ class VolumesScreenState extends State<VolumesScreen> {
                                   ),
                                 ),
                               );
+                              if (result == true) {
+                                _fetchVolumes();
+                              }
                             },
                             title: Text(
                               volume.name,
@@ -314,24 +362,29 @@ class VolumesScreenState extends State<VolumesScreen> {
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
-                                    volume.driver,
-                                    style: const TextStyle(
-                                      color: Colors.blue,
-                                      fontSize: 10,
+                                      volume.driver,
+                                      style: const TextStyle(
+                                        color: Colors.blue,
+                                        fontSize: 10,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, size: 20, color: Colors.grey),
+                                    onPressed: () => _deleteVolume(volume),
+                                    tooltip: t.actionDelete,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      }
+                          );
+                        }
                       return Card(
                         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => VolumeDetailsScreen(
@@ -342,6 +395,9 @@ class VolumesScreenState extends State<VolumesScreen> {
                                 ),
                               ),
                             );
+                            if (result == true) {
+                              _fetchVolumes();
+                            }
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
@@ -384,6 +440,11 @@ class VolumesScreenState extends State<VolumesScreen> {
                                                     ),
                                                   ),
                                                 ),
+                                              IconButton(
+                                                icon: const Icon(Icons.delete, size: 20, color: Colors.grey),
+                                                onPressed: () => _deleteVolume(volume),
+                                                tooltip: t.actionDelete,
+                                              ),
                                             ],
                                           ),
                                           const SizedBox(height: 4),
