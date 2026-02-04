@@ -692,6 +692,24 @@ abstract class AppLocalizations {
   /// **'In Use'**
   String get labelInUse;
 
+  /// No description provided for @labelDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get labelDownload;
+
+  /// No description provided for @labelShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get labelShare;
+
+  /// No description provided for @msgDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading...'**
+  String get msgDownloading;
+
   /// No description provided for @titleConfirmDelete.
   ///
   /// In en, this message translates to:

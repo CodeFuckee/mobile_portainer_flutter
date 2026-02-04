@@ -379,6 +379,31 @@ class DockerService {
     }
   }
 
+  Future<Uint8List> downloadContainerFile(String id, String path) async {
+    final cleanBaseUrl = baseUrl.endsWith('/') 
+        ? baseUrl.substring(0, baseUrl.length - 1) 
+        : baseUrl;
+        
+    final url = Uri.parse('$cleanBaseUrl/containers/$id/download').replace(queryParameters: {'path': path});
+
+    final headers = <String, String>{};
+    if (apiKey != null && apiKey!.isNotEmpty) {
+      headers['X-API-Key'] = apiKey!;
+    }
+
+    try {
+      final response = await _client.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        throw Exception('Failed to download file: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
   Future<void> updateContainerFile(String id, String path, String content) async {
     final cleanBaseUrl = baseUrl.endsWith('/') 
         ? baseUrl.substring(0, baseUrl.length - 1) 

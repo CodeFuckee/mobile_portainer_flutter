@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import '../services/docker_service.dart';
+import '../utils/notify_utils.dart';
 
 class VolumeDetailsScreen extends StatefulWidget {
   final String volumeName;
@@ -122,6 +124,8 @@ class _VolumeDetailsScreenState extends State<VolumeDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildInfoRow('ID', widget.volumeName, showCopyButton: true),
+            const Divider(),
             _buildInfoRow(t.labelDriver, _volumeDetails!['Driver'] ?? ''),
             const Divider(),
             _buildInfoRow(t.labelScope, _volumeDetails!['Scope'] ?? ''),
@@ -212,7 +216,7 @@ class _VolumeDetailsScreenState extends State<VolumeDetailsScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, {bool isMonospace = false}) {
+  Widget _buildInfoRow(String label, String value, {bool isMonospace = false, bool showCopyButton = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -226,14 +230,31 @@ class _VolumeDetailsScreenState extends State<VolumeDetailsScreen> {
             ),
           ),
           Expanded(
-            child: SelectableText(
-              value,
-              style: TextStyle(
-                fontFamily: isMonospace ? 'monospace' : null,
-                fontSize: 14,
+            child: GestureDetector(
+              onLongPress: () {
+                Clipboard.setData(ClipboardData(text: value));
+                NotifyUtils.showNotify(context, '$label copied');
+              },
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontFamily: isMonospace ? 'monospace' : null,
+                  fontSize: 14,
+                ),
               ),
             ),
           ),
+          if (showCopyButton)
+            InkWell(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: value));
+                NotifyUtils.showNotify(context, '$label copied');
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(Icons.copy, size: 16, color: Colors.grey),
+              ),
+            ),
         ],
       ),
     );

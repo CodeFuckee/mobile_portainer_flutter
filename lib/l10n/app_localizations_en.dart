@@ -318,6 +318,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelInUse => 'In Use';
 
   @override
+  String get labelDownload => 'Download';
+
+  @override
+  String get labelShare => 'Share';
+
+  @override
+  String get msgDownloading => 'Downloading...';
+
+  @override
   String get titleConfirmDelete => 'Confirm Delete';
 
   @override

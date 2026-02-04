@@ -1,3 +1,5 @@
+![mobile_portainer_flutter-brand](https://raw.githubusercontent.com/CodeFuckee/mobile_portainer_flutter/refs/heads/main/icon.png)
+
 # Mobile Portainer Flutter
 
 [English](README.md) | [中文](README_zh-CN.md)

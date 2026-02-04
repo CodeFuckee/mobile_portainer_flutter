@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import 'package:mobile_portainer_flutter/utils/notify_utils.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import '../services/docker_service.dart';
 import '../models/container_file.dart';
 
@@ -118,6 +124,174 @@ class _ContainerFilesScreenState extends State<ContainerFilesScreen> {
     }
   }
 
+  Future<void> _shareFile(ContainerFile file) async {
+    final t = AppLocalizations.of(context)!;
+    final fullPath = _currentPath == '/' ? '/${file.name}' : '$_currentPath/${file.name}';
+    
+    setState(() {
+      _isLoading = true;
+    });
+
+    final service = DockerService(
+      baseUrl: widget.apiUrl,
+      apiKey: widget.apiKey,
+      ignoreSsl: widget.ignoreSsl,
+    );
+
+    try {
+      final bytes = await service.downloadContainerFile(widget.containerId, fullPath);
+      
+      if (!mounted) return;
+
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/${file.name}');
+      await tempFile.writeAsBytes(bytes);
+      
+      setState(() {
+        _isLoading = false;
+      });
+
+      final result = await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(tempFile.path)],
+          text: 'Download ${file.name}',
+        ),
+      );
+      
+      if (result.status == ShareResultStatus.success) {
+         if (mounted) NotifyUtils.showNotify(context, t.msgFileSaved);
+      }
+      
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        NotifyUtils.showNotify(context, t.msgErrorSavingFile(e.toString()));
+      }
+    }
+  }
+
+  Future<void> _downloadFile(ContainerFile file) async {
+    final t = AppLocalizations.of(context)!;
+    final fullPath = _currentPath == '/' ? '/${file.name}' : '$_currentPath/${file.name}';
+    
+    // Check permissions
+    bool hasPermission = false;
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt >= 33) {
+         hasPermission = true; // No explicit storage permission needed for public downloads on Android 13+? Actually maybe need to use specific API, but standard file writing to Download usually works if permission is irrelevant. 
+         // Actually for Android 13+ (SDK 33), READ_EXTERNAL_STORAGE is deprecated for media. WRITE_EXTERNAL_STORAGE is also deprecated.
+         // We should just try to write to the Download directory.
+      } else if (androidInfo.version.sdkInt >= 30) {
+         // Android 11+
+         // WRITE_EXTERNAL_STORAGE is ignored. We can write to app-specific dirs or use MediaStore.
+         // But users want "Internal Storage".
+         // Let's try to get permission.
+         var status = await Permission.manageExternalStorage.status;
+         if (!status.isGranted) {
+           status = await Permission.manageExternalStorage.request();
+         }
+         hasPermission = status.isGranted;
+      } else {
+        // Android < 10
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+        }
+        hasPermission = status.isGranted;
+      }
+    } else {
+      hasPermission = true; // iOS/others usually handled by OS dialogs or not supported this way
+    }
+
+    if (!hasPermission) {
+      if (mounted) NotifyUtils.showNotify(context, 'Storage permission denied');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final service = DockerService(
+      baseUrl: widget.apiUrl,
+      apiKey: widget.apiKey,
+      ignoreSsl: widget.ignoreSsl,
+    );
+
+    try {
+      final bytes = await service.downloadContainerFile(widget.containerId, fullPath);
+      
+      if (!mounted) return;
+
+      Directory? downloadDir;
+      if (Platform.isAndroid) {
+        downloadDir = Directory('/storage/emulated/0/Download');
+        if (!downloadDir.existsSync()) {
+          downloadDir = await getExternalStorageDirectory(); // Fallback
+        }
+      } else {
+        downloadDir = await getDownloadsDirectory();
+      }
+
+      if (downloadDir == null) {
+        throw Exception('Could not find download directory');
+      }
+
+      final saveFile = File('${downloadDir.path}/${file.name}');
+      // Avoid overwriting?
+      // Simple implementation: overwrite
+      await saveFile.writeAsBytes(bytes);
+      
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) NotifyUtils.showNotify(context, '${t.msgFileSaved}: ${saveFile.path}');
+      
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        NotifyUtils.showNotify(context, t.msgErrorSavingFile(e.toString()));
+      }
+    }
+  }
+
+  void _showFileOptions(ContainerFile file) {
+    final t = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.download),
+                title: Text(t.labelDownload),
+                onTap: () {
+                  Navigator.pop(context);
+                  _downloadFile(file);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.share),
+                title: Text(t.labelShare),
+                onTap: () {
+                  Navigator.pop(context);
+                  _shareFile(file);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _navigateTo(String directoryName) {
     setState(() {
       if (_currentPath == '/') {
@@ -161,17 +335,51 @@ class _ContainerFilesScreenState extends State<ContainerFilesScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_currentPath),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _fetchFiles,
+    final canGoUp = _currentPath != '/';
+
+    return Column(
+      children: [
+        // Custom Header for file navigation
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).dividerColor,
+                width: 1,
+              ),
+            ),
           ),
-        ],
-      ),
-      body: _buildBody(t),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_upward),
+                onPressed: canGoUp ? _navigateUp : null,
+                color: canGoUp ? Theme.of(context).iconTheme.color : Colors.grey.withValues(alpha: .3),
+              ),
+              Expanded(
+                child: Text(
+                  _currentPath,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 14,
+                    fontFamily: 'monospace',
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: _fetchFiles,
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _buildBody(t),
+        ),
+      ],
     );
   }
 
@@ -210,28 +418,21 @@ class _ContainerFilesScreenState extends State<ContainerFilesScreen> {
       );
     }
 
-    return PopScope(
-      canPop: _currentPath == '/',
-      onPopInvokedWithResult: (bool didPop, dynamic result) {
-        if (didPop) return;
-        _navigateUp();
-      },
-      child: ListView.separated(
-        itemCount: _files.length + (_currentPath == '/' ? 0 : 1),
-        separatorBuilder: (context, index) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          if (_currentPath != '/' && index == 0) {
-            return ListTile(
-              leading: const Icon(Icons.folder, color: Colors.blue),
-              title: const Text('..'),
-              onTap: _navigateUp,
-            );
-          }
+    return ListView.separated(
+      itemCount: _files.length + (_currentPath == '/' ? 0 : 1),
+      separatorBuilder: (context, index) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        if (_currentPath != '/' && index == 0) {
+          return ListTile(
+            leading: const Icon(Icons.folder, color: Colors.blue),
+            title: const Text('..'),
+            onTap: _navigateUp,
+          );
+        }
 
-          final file = _files[_currentPath == '/' ? index : index - 1];
-          return _buildFileItem(file);
-        },
-      ),
+        final file = _files[_currentPath == '/' ? index : index - 1];
+        return _buildFileItem(file);
+      },
     );
   }
 
@@ -282,6 +483,12 @@ class _ContainerFilesScreenState extends State<ContainerFilesScreen> {
         '${file.isDirectory ? '-' : _formatSize(file.size)} | ${_formatDate(file.modifiedDate)}',
         style: const TextStyle(fontSize: 12),
       ),
+      trailing: !file.isDirectory
+          ? IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () => _showFileOptions(file),
+            )
+          : null,
       onTap: file.isDirectory
           ? () => _navigateTo(file.name)
           : () => _openFile(file),

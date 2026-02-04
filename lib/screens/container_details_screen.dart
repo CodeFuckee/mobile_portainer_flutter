@@ -286,8 +286,14 @@ class _ContainerDetailsScreenState extends State<ContainerDetailsScreen> {
           _buildInfoRow(
             'Name',
             details['Name']?.toString().replaceAll('/', '') ?? '',
+            showCopyButton: true,
           ),
-          _buildInfoRow('ID', details['Id']?.toString().substring(0, 12) ?? ''),
+          _buildInfoRow(
+            'ID',
+            details['Id']?.toString().substring(0, 12) ?? '',
+            showCopyButton: true,
+            copyValue: details['Id']?.toString() ?? '',
+          ),
           _buildInfoRow('Image', config['Image'] ?? ''),
           _buildInfoRow('Hostname', config['Hostname'] ?? ''),
           _buildInfoRow('Driver', details['Driver'] ?? ''),
@@ -455,6 +461,8 @@ class _ContainerDetailsScreenState extends State<ContainerDetailsScreen> {
     String value, {
     bool isError = false,
     VoidCallback? onTap,
+    bool showCopyButton = false,
+    String? copyValue,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -474,7 +482,7 @@ class _ContainerDetailsScreenState extends State<ContainerDetailsScreen> {
           Expanded(
             child: GestureDetector(
               onLongPress: () {
-                Clipboard.setData(ClipboardData(text: value));
+                Clipboard.setData(ClipboardData(text: copyValue ?? value));
                 NotifyUtils.showNotify(context, '$label copied');
               },
               onTap: onTap,
@@ -490,6 +498,17 @@ class _ContainerDetailsScreenState extends State<ContainerDetailsScreen> {
               ),
             ),
           ),
+          if (showCopyButton)
+            InkWell(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: copyValue ?? value));
+                NotifyUtils.showNotify(context, '$label copied');
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(Icons.copy, size: 16, color: Colors.grey),
+              ),
+            ),
         ],
       ),
     );

@@ -316,6 +316,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get labelInUse => '已使用';
 
   @override
+  String get labelDownload => '下载';
+
+  @override
+  String get labelShare => '分享';
+
+  @override
+  String get msgDownloading => '下载中...';
+
+  @override
   String get titleConfirmDelete => '确认删除';
 
   @override

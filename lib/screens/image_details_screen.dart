@@ -171,8 +171,8 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
       children: [
         _buildSectionTitle('Basic Info'),
         _buildInfoCard([
-          _buildInfoRow('ID', details['Id']?.toString().substring(7, 19) ?? ''), // Short ID
-          _buildInfoRow('Full ID', details['Id']?.toString() ?? ''),
+          _buildInfoRow('ID', details['Id']?.toString().substring(7, 19) ?? '', showCopyButton: true), // Short ID
+          _buildInfoRow('Full ID', details['Id']?.toString() ?? '', showCopyButton: true),
           _buildInfoRow('Size', _formatSize(details['Size'])),
           _buildInfoRow('Created', _formatDate(details['Created'])),
           _buildInfoRow('OS/Arch', '${details['Os']}/${details['Architecture']}'),
@@ -254,7 +254,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(String label, String value, {bool showCopyButton = false}) {
     if (value.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -285,6 +285,17 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
               ),
             ),
           ),
+          if (showCopyButton)
+            InkWell(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: value));
+                NotifyUtils.showNotify(context, '$label copied');
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(Icons.copy, size: 16, color: Colors.grey),
+              ),
+            ),
         ],
       ),
     );
