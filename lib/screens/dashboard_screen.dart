@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +22,8 @@ class ServerDashboardData {
   int totalImages;
   String? commitDateRaw;
   ServerUsage? usage;
+  Timer? retryTimer;
+  bool isUsingCache = false;
 
   ServerDashboardData({
     required this.name,
@@ -36,6 +39,11 @@ class ServerDashboardData {
     this.commitDateRaw,
     this.usage,
   });
+
+  void dispose() {
+    retryTimer?.cancel();
+    retryTimer = null;
+  }
 
   Map<String, dynamic> toCacheJson() {
     return {
@@ -91,6 +99,14 @@ class DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    for (var server in _serversData) {
+      server.dispose();
+    }
+    super.dispose();
   }
   
   // Public method to refresh data (called by MainTabScreen)
@@ -192,6 +208,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _fetchServerData(ServerDashboardData server) async {
+    server.retryTimer?.cancel();
     final service = DockerService(baseUrl: server.url, apiKey: server.apiKey, ignoreSsl: server.ignoreSsl);
 
     try {
@@ -218,13 +235,27 @@ class DashboardScreenState extends State<DashboardScreen> {
         server.usage = usage;
         server.isLoading = false;
         server.error = null;
+        server.isUsingCache = false;
       });
       _saveCache(server);
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        server.error = e.toString();
-        server.isLoading = false;
+        // If we have valid data (no error and not loading, or already using cache)
+        bool hasData = (!server.isLoading && server.error == null) || server.isUsingCache;
+        
+        if (hasData) {
+          server.isUsingCache = true;
+          server.error = null;
+        } else {
+          server.error = e.toString();
+          server.isLoading = false;
+        }
+      });
+
+      // Retry after 3 seconds
+      server.retryTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) _fetchServerData(server);
       });
     }
   }

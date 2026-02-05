@@ -416,6 +416,18 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get actionDelete;
 
+  /// No description provided for @actionDeleteAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete All'**
+  String get actionDeleteAll;
+
+  /// No description provided for @msgConfirmDeleteAllContainers.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete all containers in this stack? This action cannot be undone.'**
+  String get msgConfirmDeleteAllContainers;
+
   /// No description provided for @labelActive.
   ///
   /// In en, this message translates to:
@@ -907,6 +919,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enable IPv6'**
   String get labelEnableIPv6;
+
+  /// No description provided for @titleEnvVars.
+  ///
+  /// In en, this message translates to:
+  /// **'Environment Variables'**
+  String get titleEnvVars;
+
+  /// No description provided for @tabGlobal.
+  ///
+  /// In en, this message translates to:
+  /// **'Global'**
+  String get tabGlobal;
+
+  /// No description provided for @tabGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get tabGroups;
+
+  /// No description provided for @labelKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Key'**
+  String get labelKey;
+
+  /// No description provided for @labelValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get labelValue;
+
+  /// No description provided for @labelGroupName.
+  ///
+  /// In en, this message translates to:
+  /// **'Group Name'**
+  String get labelGroupName;
+
+  /// No description provided for @msgVarAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Variable added'**
+  String get msgVarAdded;
+
+  /// No description provided for @msgGroupAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Group added'**
+  String get msgGroupAdded;
+
+  /// No description provided for @msgConfirmDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete?'**
+  String get msgConfirmDelete;
+
+  /// No description provided for @actionInsertEnvVars.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert Env Vars'**
+  String get actionInsertEnvVars;
+
+  /// No description provided for @titleSelectEnvVars.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Env Vars'**
+  String get titleSelectEnvVars;
+
+  /// No description provided for @labelSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} variables selected'**
+  String labelSelectedCount(Object count);
 }
 
 class _AppLocalizationsDelegate

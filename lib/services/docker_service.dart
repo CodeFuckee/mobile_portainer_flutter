@@ -530,12 +530,14 @@ class DockerService {
     }
   }
 
-  Future<void> removeContainer(String id) async {
+  Future<void> removeContainer(String id, {bool force = false}) async {
       final cleanBaseUrl = baseUrl.endsWith('/') 
         ? baseUrl.substring(0, baseUrl.length - 1) 
         : baseUrl;
         
-    final url = Uri.parse('$cleanBaseUrl/containers/$id'); // DELETE request
+    final url = Uri.parse('$cleanBaseUrl/containers/$id').replace(
+      queryParameters: {'force': force.toString()},
+    );
 
     final headers = <String, String>{};
     if (apiKey != null && apiKey!.isNotEmpty) {

@@ -174,6 +174,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionDelete => 'Delete';
 
   @override
+  String get actionDeleteAll => 'Delete All';
+
+  @override
+  String get msgConfirmDeleteAllContainers =>
+      'Are you sure you want to delete all containers in this stack? This action cannot be undone.';
+
+  @override
   String get labelActive => 'Active';
 
   @override
@@ -432,4 +439,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelEnableIPv6 => 'Enable IPv6';
+
+  @override
+  String get titleEnvVars => 'Environment Variables';
+
+  @override
+  String get tabGlobal => 'Global';
+
+  @override
+  String get tabGroups => 'Groups';
+
+  @override
+  String get labelKey => 'Key';
+
+  @override
+  String get labelValue => 'Value';
+
+  @override
+  String get labelGroupName => 'Group Name';
+
+  @override
+  String get msgVarAdded => 'Variable added';
+
+  @override
+  String get msgGroupAdded => 'Group added';
+
+  @override
+  String get msgConfirmDelete => 'Are you sure you want to delete?';
+
+  @override
+  String get actionInsertEnvVars => 'Insert Env Vars';
+
+  @override
+  String get titleSelectEnvVars => 'Select Env Vars';
+
+  @override
+  String labelSelectedCount(Object count) {
+    return '$count variables selected';
+  }
 }

@@ -11,6 +11,8 @@ import 'container_logs_screen.dart';
 import 'container_details_screen.dart';
 import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 
+import '../widgets/env_vars_selector.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -526,6 +528,60 @@ class HomeScreenState extends State<HomeScreen> {
                       errorText: error,
                     ),
                     maxLines: 3,
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      icon: const Icon(Icons.add_circle_outline),
+                      label: Text(t.actionInsertEnvVars),
+                      onPressed: () async {
+                        final List<Map<String, String>>? selectedVars = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const EnvVarsSelector(),
+                          ),
+                        );
+                        
+                        if (selectedVars != null && selectedVars.isNotEmpty) {
+                          final buffer = StringBuffer();
+                          // Add space if needed
+                          if (commandController.text.isNotEmpty && !commandController.text.endsWith(' ')) {
+                            buffer.write(' ');
+                          }
+                          
+                          for (var v in selectedVars) {
+                            // Quote value if it contains spaces
+                            String val = v['value'] ?? '';
+                            if (val.contains(' ')) {
+                              val = '"$val"';
+                            }
+                            buffer.write('-e ${v['key']}=$val ');
+                          }
+                          
+                          final insertText = buffer.toString();
+                          final currentText = commandController.text;
+                          final selection = commandController.selection;
+                          
+                          String newText;
+                          int newSelectionIndex;
+                          
+                          if (selection.isValid && selection.start >= 0) {
+                             final start = selection.start;
+                             newText = currentText.replaceRange(start, selection.end, insertText);
+                             newSelectionIndex = start + insertText.length;
+                          } else {
+                             newText = currentText + insertText;
+                             newSelectionIndex = newText.length;
+                          }
+                          
+                          commandController.value = TextEditingValue(
+                            text: newText,
+                            selection: TextSelection.collapsed(offset: newSelectionIndex),
+                          );
+                        }
+                      },
+                    ),
                   ),
                   if (isRunning)
                     const Padding(

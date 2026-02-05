@@ -52,6 +52,8 @@
   "msgServerSwitched": "已切换到 {name}",
   "actionEdit": "编辑",
   "actionDelete": "删除",
+  "actionDeleteAll": "全部删除",
+  "msgConfirmDeleteAllContainers": "确定要删除该应用栈下的所有容器吗？此操作无法撤销。",
   "labelActive": "当前使用",
   "titleDashboard": "概览",
   "labelServerInfo": "服务器信息",
@@ -133,5 +135,17 @@
   "labelAttachable": "可附加",
   "labelIngress": "入口",
   "labelIPAM": "IPAM",
-  "labelEnableIPv6": "启用 IPv6"
+  "labelEnableIPv6": "启用 IPv6",
+  "titleEnvVars": "环境变量",
+  "tabGlobal": "全局",
+  "tabGroups": "组",
+  "labelKey": "键",
+  "labelValue": "值",
+  "labelGroupName": "组名",
+  "msgVarAdded": "变量已添加",
+  "msgGroupAdded": "组已添加",
+  "msgConfirmDelete": "确定要删除吗？",
+  "actionInsertEnvVars": "插入环境变量",
+  "titleSelectEnvVars": "选择环境变量",
+  "labelSelectedCount": "已选 {count} 个变量"
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
+import 'package:mobile_portainer_flutter/utils/notify_utils.dart';
 import '../models/docker_container.dart';
 import '../services/docker_service.dart';
 import 'container_details_screen.dart';
@@ -121,6 +122,65 @@ class StackContainersScreenState extends State<StackContainersScreen> {
     }
   }
 
+  Future<void> _deleteAllContainers() async {
+    final t = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(t.titleConfirmDelete),
+        content: Text(t.msgConfirmDeleteAllContainers),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(t.actionCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(t.actionDeleteAll),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final service = DockerService(
+        baseUrl: _currentApiUrl,
+        apiKey: _currentApiKey,
+        ignoreSsl: _currentIgnoreSsl,
+      );
+
+      final containersToDelete = List<DockerContainer>.from(_allContainers);
+      int successCount = 0;
+      int failCount = 0;
+
+      for (final container in containersToDelete) {
+        if (container.isSelf) continue;
+        
+        try {
+          await service.removeContainer(container.id, force: true);
+          successCount++;
+        } catch (e) {
+          debugPrint('Failed to delete container ${container.name}: $e');
+          failCount++;
+        }
+      }
+
+      if (mounted) {
+        if (failCount > 0) {
+          NotifyUtils.showNotify(context, 'Deleted $successCount, Failed $failCount');
+        } else {
+          NotifyUtils.showNotify(context, '$successCount containers deleted');
+        }
+        _fetchContainers();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -129,6 +189,10 @@ class StackContainersScreenState extends State<StackContainersScreen> {
       appBar: AppBar(
         title: Text(widget.stackName),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_sweep, color: Colors.redAccent),
+            onPressed: _allContainers.isEmpty ? null : _deleteAllContainers,
+          ),
           IconButton(
             icon: Icon(
               _isCompactMode ? Icons.view_agenda_outlined : Icons.view_list,

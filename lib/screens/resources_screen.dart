@@ -5,6 +5,7 @@ import 'images_screen.dart';
 import 'networks_screen.dart';
 import 'stacks_screen.dart';
 import 'volumes_screen.dart';
+import 'env_vars_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/docker_service.dart';
 
@@ -40,6 +41,12 @@ class ResourcesScreen extends StatelessWidget {
         icon: Icons.storage,
         color: Colors.brown,
         screen: const VolumesScreen(),
+      ),
+      _ResourceItem(
+        title: t.titleEnvVars,
+        icon: Icons.settings_ethernet,
+        color: Colors.blueGrey,
+        screen: const EnvVarsScreen(),
       ),
     ];
 

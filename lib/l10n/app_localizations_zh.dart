@@ -172,6 +172,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get actionDelete => '删除';
 
   @override
+  String get actionDeleteAll => '全部删除';
+
+  @override
+  String get msgConfirmDeleteAllContainers => '确定要删除该应用栈下的所有容器吗？此操作无法撤销。';
+
+  @override
   String get labelActive => '当前使用';
 
   @override
@@ -428,4 +434,42 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get labelEnableIPv6 => '启用 IPv6';
+
+  @override
+  String get titleEnvVars => '环境变量';
+
+  @override
+  String get tabGlobal => '全局';
+
+  @override
+  String get tabGroups => '组';
+
+  @override
+  String get labelKey => '键';
+
+  @override
+  String get labelValue => '值';
+
+  @override
+  String get labelGroupName => '组名';
+
+  @override
+  String get msgVarAdded => '变量已添加';
+
+  @override
+  String get msgGroupAdded => '组已添加';
+
+  @override
+  String get msgConfirmDelete => '确定要删除吗？';
+
+  @override
+  String get actionInsertEnvVars => '插入环境变量';
+
+  @override
+  String get titleSelectEnvVars => '选择环境变量';
+
+  @override
+  String labelSelectedCount(Object count) {
+    return '已选 $count 个变量';
+  }
 }

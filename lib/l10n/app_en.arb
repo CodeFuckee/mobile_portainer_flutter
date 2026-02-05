@@ -52,6 +52,8 @@
   "msgServerSwitched": "Switched to {name}",
   "actionEdit": "Edit",
   "actionDelete": "Delete",
+  "actionDeleteAll": "Delete All",
+  "msgConfirmDeleteAllContainers": "Are you sure you want to delete all containers in this stack? This action cannot be undone.",
   "labelActive": "Active",
   "titleDashboard": "Dashboard",
   "labelServerInfo": "Server Info",
@@ -133,5 +135,17 @@
   "labelAttachable": "Attachable",
   "labelIngress": "Ingress",
   "labelIPAM": "IPAM",
-  "labelEnableIPv6": "Enable IPv6"
+  "labelEnableIPv6": "Enable IPv6",
+  "titleEnvVars": "Environment Variables",
+  "tabGlobal": "Global",
+  "tabGroups": "Groups",
+  "labelKey": "Key",
+  "labelValue": "Value",
+  "labelGroupName": "Group Name",
+  "msgVarAdded": "Variable added",
+  "msgGroupAdded": "Group added",
+  "msgConfirmDelete": "Are you sure you want to delete?",
+  "actionInsertEnvVars": "Insert Env Vars",
+  "titleSelectEnvVars": "Select Env Vars",
+  "labelSelectedCount": "{count} variables selected"
 }
