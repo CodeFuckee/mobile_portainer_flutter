@@ -42,10 +42,12 @@ class _ContainerLogsScreenState extends State<ContainerLogsScreen> {
   double _fontSize = 13.0;
   
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
   Timer? _refreshTimer;
   final FocusNode _searchFocusNode = FocusNode();
 
   double get _itemHeight => _fontSize * 1.5 + 4; // Dynamic item height based on font size
+  double _contentWidth = 0;
 
   @override
   void initState() {
@@ -60,9 +62,31 @@ class _ContainerLogsScreenState extends State<ContainerLogsScreen> {
   void dispose() {
     _refreshTimer?.cancel();
     _scrollController.dispose();
+    _horizontalScrollController.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  void _calculateContentWidth() {
+    if (_logLines.isEmpty) {
+      _contentWidth = 0;
+      return;
+    }
+    int maxLen = 0;
+    for (var line in _logLines) {
+      if (line.length > maxLen) maxLen = line.length;
+    }
+
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(
+          text: 'A',
+          style: TextStyle(fontFamily: 'monospace', fontSize: _fontSize)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    // Estimate width: maxLen * charWidth + padding
+    _contentWidth = maxLen * textPainter.width + 60;
   }
 
   Future<void> _fetchLogs({bool isBackground = false}) async {
@@ -86,6 +110,7 @@ class _ContainerLogsScreenState extends State<ContainerLogsScreen> {
               _logLines.removeLast();
             }
           }
+          _calculateContentWidth();
           _isLoading = false;
         });
         
@@ -318,42 +343,70 @@ class _ContainerLogsScreenState extends State<ContainerLogsScreen> {
                 )
               : Container(
                   color: const Color(0xFF1E1E1E), // VS Code like background
-                  child: SelectionArea(
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: _logLines.length,
-                      itemExtent: _itemHeight,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemBuilder: (context, index) {
-                        final line = _logLines[index];
-                        final isMatch = _searchResults.contains(index);
-                        final isCurrentMatch = isMatch && 
-                                             _searchResults.isNotEmpty && 
-                                             _searchResults[_currentSearchIndex] == index;
-                        
-                        return Container(
-                          height: _itemHeight,
-                          color: isCurrentMatch 
-                              ? const Color(0xFF3D3D3D) // Highlight current match line
-                              : null,
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: RichText(
-                              text: TextSpan(
-                                children: _buildLogLineSpans(line, _searchController.text),
-                                style: TextStyle(
-                                  fontFamily: 'monospace',
-                                  fontSize: _fontSize,
-                                  height: 1.5,
-                                  color: const Color(0xFFD4D4D4),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Scrollbar(
+                        controller: _horizontalScrollController,
+                        thumbVisibility: true,
+                        child: SingleChildScrollView(
+                          controller: _horizontalScrollController,
+                          scrollDirection: Axis.horizontal,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minWidth: constraints.maxWidth,
+                            ),
+                            child: SizedBox(
+                              width: _contentWidth > constraints.maxWidth
+                                  ? _contentWidth
+                                  : constraints.maxWidth,
+                              child: SelectionArea(
+                                child: ListView.builder(
+                                  controller: _scrollController,
+                                  itemCount: _logLines.length,
+                                  itemExtent: _itemHeight,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  itemBuilder: (context, index) {
+                                    final line = _logLines[index];
+                                    final isMatch =
+                                        _searchResults.contains(index);
+                                    final isCurrentMatch = isMatch &&
+                                        _searchResults.isNotEmpty &&
+                                        _searchResults[_currentSearchIndex] ==
+                                            index;
+
+                                    return Container(
+                                      height: _itemHeight,
+                                      color: isCurrentMatch
+                                          ? const Color(
+                                              0xFF3D3D3D) // Highlight current match line
+                                          : null,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      alignment: Alignment.centerLeft,
+                                      child: RichText(
+                                        text: TextSpan(
+                                          children: _buildLogLineSpans(
+                                              line, _searchController.text),
+                                          style: TextStyle(
+                                            fontFamily: 'monospace',
+                                            fontSize: _fontSize,
+                                            height: 1.5,
+                                            color: const Color(0xFFD4D4D4),
+                                          ),
+                                        ),
+                                        overflow: TextOverflow.visible,
+                                        softWrap: false,
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ),
       floatingActionButton: Column(
@@ -368,6 +421,7 @@ class _ContainerLogsScreenState extends State<ContainerLogsScreen> {
               setState(() {
                 if (_fontSize < 30) {
                   _fontSize += 2;
+                  _calculateContentWidth();
                 }
               });
             },
@@ -382,6 +436,7 @@ class _ContainerLogsScreenState extends State<ContainerLogsScreen> {
               setState(() {
                 if (_fontSize > 8) {
                   _fontSize -= 2;
+                  _calculateContentWidth();
                 }
               });
             },

@@ -156,6 +156,7 @@ class _ContainerDetailsScreenState extends State<ContainerDetailsScreen> {
                     apiUrl: widget.apiUrl,
                     apiKey: widget.apiKey,
                     ignoreSsl: widget.ignoreSsl,
+                    isRunning: _containerDetails?['State']?['Running'] ?? false,
                   ),
                   _buildNetworkTab(),
                   _buildStorageTab(),

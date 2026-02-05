@@ -316,6 +316,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get labelInUse => '已使用';
 
   @override
+  String get msgContainerClosed => '容器已关闭，无法获取容器内文件';
+
+  @override
   String get labelDownload => '下载';
 
   @override

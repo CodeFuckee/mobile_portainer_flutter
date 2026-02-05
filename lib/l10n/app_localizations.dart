@@ -692,6 +692,12 @@ abstract class AppLocalizations {
   /// **'In Use'**
   String get labelInUse;
 
+  /// No description provided for @msgContainerClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Container is closed, cannot access files'**
+  String get msgContainerClosed;
+
   /// No description provided for @labelDownload.
   ///
   /// In en, this message translates to:

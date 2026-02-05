@@ -98,6 +98,7 @@
   "msgFileSaved": "文件保存成功",
   "msgErrorSavingFile": "保存文件失败: {error}",
   "labelInUse": "已使用",
+  "msgContainerClosed": "容器已关闭，无法获取容器内文件",
   "labelDownload": "下载",
   "labelShare": "分享",
   "msgDownloading": "下载中...",

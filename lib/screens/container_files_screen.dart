@@ -19,6 +19,7 @@ class ContainerFilesScreen extends StatefulWidget {
   final String apiUrl;
   final String apiKey;
   final bool ignoreSsl;
+  final bool isRunning;
 
   const ContainerFilesScreen({
     super.key,
@@ -27,6 +28,7 @@ class ContainerFilesScreen extends StatefulWidget {
     required this.apiUrl,
     required this.apiKey,
     this.ignoreSsl = false,
+    required this.isRunning,
   });
 
   @override
@@ -45,7 +47,24 @@ class _ContainerFilesScreenState extends State<ContainerFilesScreen> {
     _fetchFiles();
   }
 
+  @override
+  void didUpdateWidget(ContainerFilesScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isRunning != oldWidget.isRunning) {
+      _fetchFiles();
+    }
+  }
+
   Future<void> _fetchFiles() async {
+    if (!widget.isRunning) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _error = null;
@@ -340,6 +359,26 @@ class _ContainerFilesScreenState extends State<ContainerFilesScreen> {
   }
 
   Widget _buildBody(AppLocalizations t) {
+    if (!widget.isRunning) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.info_outline, color: Colors.grey, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                t.msgContainerClosed,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

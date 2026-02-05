@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import '../services/docker_service.dart';
+import 'stack_containers_screen.dart';
 
 class StacksScreen extends StatefulWidget {
   const StacksScreen({super.key});
@@ -207,7 +208,14 @@ class StacksScreenState extends State<StacksScreen> {
                               vertical: 0,
                             ),
                             onTap: () {
-                              // Optional: Navigate to details if needed
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => StackContainersScreen(
+                                    stackName: stackName,
+                                  ),
+                                ),
+                              );
                             },
                             title: Text(
                               stackName,
@@ -225,7 +233,14 @@ class StacksScreenState extends State<StacksScreen> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
                           onTap: () {
-                            // Optional: Navigate to details if needed
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => StackContainersScreen(
+                                  stackName: stackName,
+                                ),
+                              ),
+                            );
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),

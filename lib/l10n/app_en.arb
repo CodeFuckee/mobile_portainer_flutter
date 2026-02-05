@@ -98,6 +98,7 @@
   "msgFileSaved": "File saved successfully",
   "msgErrorSavingFile": "Error saving file: {error}",
   "labelInUse": "In Use",
+  "msgContainerClosed": "Container is closed, cannot access files",
   "labelDownload": "Download",
   "labelShare": "Share",
   "msgDownloading": "Downloading...",

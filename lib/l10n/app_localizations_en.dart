@@ -318,6 +318,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelInUse => 'In Use';
 
   @override
+  String get msgContainerClosed => 'Container is closed, cannot access files';
+
+  @override
   String get labelDownload => 'Download';
 
   @override
