@@ -636,6 +636,29 @@ class DockerService {
       throw Exception('Network error: $e');
     }
   }
+
+  Future<Map<String, dynamic>> getSystemInfo() async {
+    final cleanBaseUrl = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    final url = Uri.parse('$cleanBaseUrl/info');
+
+    final headers = <String, String>{};
+    if (apiKey != null && apiKey!.isNotEmpty) {
+      headers['X-API-Key'] = apiKey!;
+    }
+
+    try {
+      final response = await _client.get(url, headers: headers);
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Failed to load system info: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
  
   Future<WebSocketChannel> connectToEvents() async {
     final cleanBaseUrl = baseUrl.endsWith('/') 

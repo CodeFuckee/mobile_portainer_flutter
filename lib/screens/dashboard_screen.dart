@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import 'package:mobile_portainer_flutter/services/docker_service.dart';
-import 'package:mobile_portainer_flutter/models/docker_container.dart';
-import 'package:mobile_portainer_flutter/models/docker_image.dart';
 import 'package:mobile_portainer_flutter/models/server_usage.dart';
 import 'package:intl/intl.dart';
 
@@ -212,27 +210,43 @@ class DashboardScreenState extends State<DashboardScreen> {
     final service = DockerService(baseUrl: server.url, apiKey: server.apiKey, ignoreSsl: server.ignoreSsl);
 
     try {
-      // Use Future.wait to fetch both in parallel for this server
-      final results = await Future.wait([
-        service.getContainers(),
-        service.getImages(),
-        service.getGitVersion().catchError((_) => <String, dynamic>{}),
-        service.getUsage().then<ServerUsage?>((v) => v).catchError((_) => null),
-      ]);
-
-      final containers = results[0] as List<DockerContainer>;
-      final images = results[1] as List<DockerImage>;
-      final gitInfo = results[2] as Map<String, dynamic>;
-      final usage = results[3] as ServerUsage?;
+      final info = await service.getSystemInfo();
 
       if (!mounted) return;
       setState(() {
-        server.totalContainers = containers.length;
-        server.runningContainers = containers.where((c) => c.status == 'running').length;
-        server.stoppedContainers = containers.where((c) => c.status == 'exited' || c.status == 'stopped').length;
-        server.totalImages = images.length;
-        server.commitDateRaw = gitInfo['date']?.toString();
-        server.usage = usage;
+        if (info['docker'] != null && info['docker']['containers'] != null) {
+          server.totalContainers = info['docker']['containers']['total'] ?? 0;
+          server.runningContainers = info['docker']['containers']['running'] ?? 0;
+          server.stoppedContainers = info['docker']['containers']['stopped'] ?? 0;
+        } else {
+          server.totalContainers = 0;
+          server.runningContainers = 0;
+          server.stoppedContainers = 0;
+        }
+        
+        server.totalImages = info['docker']?['images'] ?? 0;
+        server.commitDateRaw = info['git']?['date']?.toString();
+        
+        if (info['system'] != null) {
+          final cpu = info['system']['cpu'];
+          final memory = info['system']['memory'];
+          
+          if (cpu != null && memory != null) {
+            final disks = (info['system']['disk'] as List?)?.map((d) => DiskUsage.fromJson(d)).toList() ?? [];
+            final gpus = (info['system']['gpu'] as List?)?.map((g) => GpuUsage.fromJson(g)).toList() ?? [];
+
+            server.usage = ServerUsage(
+              cpuPercent: (cpu['percent'] as num).toDouble(),
+              cpuCount: (cpu['count'] as num).toInt(),
+              memoryPercent: (memory['percent'] as num).toDouble(),
+              memoryTotal: (memory['total'] as num).toInt(),
+              memoryUsed: (memory['used'] as num).toInt(),
+              disks: disks,
+              gpus: gpus,
+            );
+          }
+        }
+        
         server.isLoading = false;
         server.error = null;
         server.isUsingCache = false;
