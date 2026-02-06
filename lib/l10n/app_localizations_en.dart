@@ -288,6 +288,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get titleResources => 'Resources';
 
   @override
+  String get titlePorts => 'Ports';
+
+  @override
+  String msgAvailablePorts(Object count) {
+    return 'Available Ports: $count';
+  }
+
+  @override
+  String get msgPortRange => 'Port Range';
+
+  @override
   String get labelMountpoint => 'Mountpoint';
 
   @override

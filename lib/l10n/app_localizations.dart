@@ -638,6 +638,24 @@ abstract class AppLocalizations {
   /// **'Resources'**
   String get titleResources;
 
+  /// No description provided for @titlePorts.
+  ///
+  /// In en, this message translates to:
+  /// **'Ports'**
+  String get titlePorts;
+
+  /// No description provided for @msgAvailablePorts.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Ports: {count}'**
+  String msgAvailablePorts(Object count);
+
+  /// No description provided for @msgPortRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Port Range'**
+  String get msgPortRange;
+
   /// No description provided for @labelMountpoint.
   ///
   /// In en, this message translates to:

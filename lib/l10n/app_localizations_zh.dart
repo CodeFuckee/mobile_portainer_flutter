@@ -285,6 +285,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get titleResources => '资源';
 
   @override
+  String get titlePorts => '端口';
+
+  @override
+  String msgAvailablePorts(Object count) {
+    return '可用端口数：$count';
+  }
+
+  @override
+  String get msgPortRange => '端口范围';
+
+  @override
   String get labelMountpoint => '挂载点';
 
   @override

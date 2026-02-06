@@ -6,6 +6,7 @@ import 'networks_screen.dart';
 import 'stacks_screen.dart';
 import 'volumes_screen.dart';
 import 'env_vars_screen.dart';
+import 'ports_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/docker_service.dart';
 
@@ -47,6 +48,12 @@ class ResourcesScreen extends StatelessWidget {
         icon: Icons.settings_ethernet,
         color: Colors.blueGrey,
         screen: const EnvVarsScreen(),
+      ),
+      _ResourceItem(
+        title: t.titlePorts,
+        icon: Icons.settings_input_component,
+        color: Colors.indigo,
+        screen: const PortsScreen(),
       ),
     ];
 

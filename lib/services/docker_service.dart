@@ -814,4 +814,29 @@ class DockerService {
     }
     return buffer.toString();
   }
+
+  Future<Map<String, dynamic>> getAvailablePorts() async {
+    final cleanBaseUrl = baseUrl.endsWith('/') 
+        ? baseUrl.substring(0, baseUrl.length - 1) 
+        : baseUrl;
+        
+    final url = Uri.parse('$cleanBaseUrl/ports/available');
+
+    final headers = <String, String>{};
+    if (apiKey != null && apiKey!.isNotEmpty) {
+      headers['X-API-Key'] = apiKey!;
+    }
+
+    try {
+      final response = await _client.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Failed to load available ports: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
 }
