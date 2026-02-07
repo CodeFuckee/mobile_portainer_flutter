@@ -160,6 +160,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get msgServerUpdated => 'Server updated';
 
   @override
+  String get msgServerCopied => 'Server copied';
+
+  @override
   String get msgServerDeleted => 'Server deleted';
 
   @override
@@ -169,6 +172,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionEdit => 'Edit';
+
+  @override
+  String get actionCopy => 'Copy';
 
   @override
   String get actionDelete => 'Delete';

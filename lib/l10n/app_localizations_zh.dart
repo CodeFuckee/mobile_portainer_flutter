@@ -158,6 +158,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get msgServerUpdated => '已更新服务器';
 
   @override
+  String get msgServerCopied => '服务器已复制';
+
+  @override
   String get msgServerDeleted => '已删除服务器';
 
   @override
@@ -167,6 +170,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get actionEdit => '编辑';
+
+  @override
+  String get actionCopy => '复制';
 
   @override
   String get actionDelete => '删除';

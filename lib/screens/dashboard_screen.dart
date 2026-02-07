@@ -76,11 +76,13 @@ class ServerDashboardData {
 class DashboardScreen extends StatefulWidget {
   final VoidCallback? onSwitchToContainers;
   final VoidCallback? onSwitchToImages;
+  final String layoutMode;
 
   const DashboardScreen({
     super.key,
     this.onSwitchToContainers,
     this.onSwitchToImages,
+    this.layoutMode = 'auto',
   });
 
   @override
@@ -98,6 +100,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadData();
   }
+
 
   @override
   void dispose() {
@@ -301,19 +304,73 @@ class DashboardScreenState extends State<DashboardScreen> {
               ? Center(child: Text(t.labelServerInfo)) // Placeholder for "No servers"
               : RefreshIndicator(
                   onRefresh: _loadData,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: _serversData.length,
-                    itemBuilder: (context, index) {
-                      final server = _serversData[index];
-                      return _buildServerCard(context, server, t);
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      bool useGrid = false;
+                      
+                      if (widget.layoutMode == 'grid') {
+                        useGrid = true;
+                      } else if (widget.layoutMode == 'list') {
+                        useGrid = false;
+                      } else {
+                        // Auto mode
+                        useGrid = constraints.maxWidth >= 600;
+                      }
+
+                      if (!useGrid) {
+                        return ListView.builder(
+                          padding: const EdgeInsets.all(16.0),
+                          itemCount: _serversData.length,
+                          itemBuilder: (context, index) {
+                            final server = _serversData[index];
+                            return _buildServerCard(context, server, t);
+                          },
+                        );
+                      } else {
+                        // Grid Layout
+                        // For manual grid mode on small screens, use 1 column or 2 depending on width
+                        int crossAxisCount;
+                        if (constraints.maxWidth > 900) {
+                          crossAxisCount = 3;
+                        } else if (constraints.maxWidth >= 600) {
+                          crossAxisCount = 2;
+                        } else {
+                          // Force grid on mobile
+                          crossAxisCount = 2; 
+                        }
+                        
+                        double spacing = 16.0;
+                        double totalHorizontalPadding = 32.0; // 16 left + 16 right
+                        double itemWidth = (constraints.maxWidth - totalHorizontalPadding - (crossAxisCount - 1) * spacing) / crossAxisCount;
+                        
+                        // Estimate required height for the card to ensure content fits
+                        // Header (~80) + Stats (~100) + Usage (~120) + Padding (~40)
+                        double itemHeight = 420.0;
+                        double childAspectRatio = itemWidth / itemHeight;
+
+                        return GridView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(16.0),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            crossAxisSpacing: spacing,
+                            mainAxisSpacing: spacing,
+                            childAspectRatio: childAspectRatio,
+                          ),
+                          itemCount: _serversData.length,
+                          itemBuilder: (context, index) {
+                            final server = _serversData[index];
+                            return _buildServerCard(context, server, t, margin: EdgeInsets.zero);
+                          },
+                        );
+                      }
                     },
                   ),
                 ),
     );
   }
 
-  Widget _buildServerCard(BuildContext context, ServerDashboardData server, AppLocalizations t) {
+  Widget _buildServerCard(BuildContext context, ServerDashboardData server, AppLocalizations t, {EdgeInsetsGeometry? margin}) {
     final bool isActive = server.url == _currentApiUrl;
     
     // Define colors for active state
@@ -322,7 +379,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     final activeSubTextColor = Colors.white70;
     
     return Card(
-      margin: const EdgeInsets.only(bottom: 16.0),
+      margin: margin ?? const EdgeInsets.only(bottom: 16.0),
       elevation: isActive ? 8 : 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
@@ -333,10 +390,12 @@ class DashboardScreenState extends State<DashboardScreen> {
         onTap: () => _switchToAndNavigate(server),
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -505,8 +564,9 @@ class DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildVerticalDivider(bool isActive) {
     return Container(

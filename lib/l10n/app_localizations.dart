@@ -392,6 +392,12 @@ abstract class AppLocalizations {
   /// **'Server updated'**
   String get msgServerUpdated;
 
+  /// No description provided for @msgServerCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Server copied'**
+  String get msgServerCopied;
+
   /// No description provided for @msgServerDeleted.
   ///
   /// In en, this message translates to:
@@ -409,6 +415,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit'**
   String get actionEdit;
+
+  /// No description provided for @actionCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get actionCopy;
 
   /// No description provided for @actionDelete.
   ///

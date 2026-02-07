@@ -154,6 +154,25 @@ class SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _copyServer(int index) async {
+    final t = AppLocalizations.of(context)!;
+    final server = _servers[index];
+    
+    final newServer = Map<String, String>.from(server);
+    newServer['name'] = '${server['name']} - Copy';
+    
+    setState(() {
+      _servers.add(newServer);
+    });
+    
+    final prefs = await SharedPreferences.getInstance();
+    await _saveServerList(prefs);
+    
+    if (mounted) {
+      NotifyUtils.showNotify(context, t.msgServerCopied);
+    }
+  }
+
   Future<void> _deleteServer(int index) async {
     final server = _servers[index];
     final isDeletingActive = server['url'] == _activeApiUrl;
@@ -529,6 +548,8 @@ class SettingsScreenState extends State<SettingsScreen> {
                             onSelected: (value) {
                               if (value == 'edit') {
                                 _showServerDialog(server: server, index: index);
+                              } else if (value == 'copy') {
+                                _copyServer(index);
                               } else if (value == 'delete') {
                                 _deleteServer(index);
                               }
@@ -537,6 +558,10 @@ class SettingsScreenState extends State<SettingsScreen> {
                               PopupMenuItem(
                                 value: 'edit',
                                 child: Text(t.actionEdit),
+                              ),
+                              PopupMenuItem(
+                                value: 'copy',
+                                child: Text(t.actionCopy),
                               ),
                               PopupMenuItem(
                                 value: 'delete',

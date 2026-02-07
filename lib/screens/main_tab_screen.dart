@@ -6,6 +6,7 @@ import 'images_screen.dart';
 import 'resources_screen.dart';
 import 'settings_screen.dart';
 import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainTabScreen extends StatefulWidget {
   const MainTabScreen({super.key});
@@ -17,6 +18,8 @@ class MainTabScreen extends StatefulWidget {
 class _MainTabScreenState extends State<MainTabScreen> {
   int _selectedIndex = 0;
   bool _settingsChanged = false;
+  String _dashboardLayoutMode = 'auto'; // 'auto', 'list', 'grid'
+  String _containerLayoutMode = 'grid'; // 'list', 'grid'
 
   final GlobalKey<DashboardScreenState> _dashboardKey =
       GlobalKey<DashboardScreenState>();
@@ -27,6 +30,56 @@ class _MainTabScreenState extends State<MainTabScreen> {
   // Keys for other screens are no longer needed as they are navigated to from Resources
   final GlobalKey<SettingsScreenState> _settingsKey =
       GlobalKey<SettingsScreenState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLayoutPreference();
+  }
+
+  Future<void> _loadLayoutPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _dashboardLayoutMode = prefs.getString('dashboard_layout_mode') ?? 'auto';
+      _containerLayoutMode = prefs.getString('container_layout_mode') ?? 'grid';
+    });
+  }
+
+  Future<void> _toggleLayoutMode() async {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final prefs = await SharedPreferences.getInstance();
+    final isWide = screenWidth >= 600;
+
+    if (_selectedIndex == 0) {
+      // Dashboard toggle
+      final effectiveMode = _dashboardLayoutMode == 'auto' 
+          ? (isWide ? 'grid' : 'list') 
+          : _dashboardLayoutMode;
+
+      String newMode = effectiveMode == 'grid' ? 'list' : 'grid';
+      
+      await prefs.setString('dashboard_layout_mode', newMode);
+      
+      if (!mounted) return;
+      setState(() {
+        _dashboardLayoutMode = newMode;
+      });
+    } else if (_selectedIndex == 1) {
+      // Container toggle
+      // For containers, we only have 'grid' (normal) or 'list' (compact)
+      // 'grid' means Card view (GridView on wide, Card List on narrow)
+      // 'list' means Compact Tile view (List view always)
+      String newMode = _containerLayoutMode == 'grid' ? 'list' : 'grid';
+      
+      await prefs.setString('container_layout_mode', newMode);
+      
+      if (!mounted) return;
+      setState(() {
+        _containerLayoutMode = newMode;
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -63,10 +116,32 @@ class _MainTabScreenState extends State<MainTabScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
+    
+    // Calculate effective layout mode for UI display
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWide = screenWidth >= 600;
+    
+    String currentEffectiveMode = 'list';
+    if (_selectedIndex == 0) {
+      currentEffectiveMode = _dashboardLayoutMode == 'auto' 
+          ? (isWide ? 'grid' : 'list') 
+          : _dashboardLayoutMode;
+    } else if (_selectedIndex == 1) {
+      currentEffectiveMode = _containerLayoutMode;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_getTitle(t)),
         actions: [
+          if (_selectedIndex == 0 || _selectedIndex == 1) // Layout toggle for Dashboard & Containers
+            IconButton(
+              icon: Icon(currentEffectiveMode == 'grid' 
+                  ? Icons.view_list 
+                  : Icons.grid_view),
+              onPressed: _toggleLayoutMode,
+              tooltip: 'Switch Layout',
+            ),
           if (_selectedIndex < 2) // Only Dashboard (0) and Containers (1) need refresh here
             IconButton(
               icon: const Icon(Icons.refresh),
@@ -110,6 +185,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
         children: [
           DashboardScreen(
             key: _dashboardKey,
+            layoutMode: _dashboardLayoutMode,
             onSwitchToContainers: () {
               // Refresh containers because server might have changed
               _containersKey.currentState?.refreshAfterSettings();
@@ -124,7 +200,10 @@ class _MainTabScreenState extends State<MainTabScreen> {
               _onItemTapped(2);
             },
           ),
-          HomeScreen(key: _containersKey),
+          HomeScreen(
+            key: _containersKey,
+            layoutMode: _containerLayoutMode,
+          ),
           const ResourcesScreen(),
           SettingsScreen(
             key: _settingsKey,

@@ -14,7 +14,12 @@ import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import '../widgets/env_vars_selector.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String layoutMode;
+
+  const HomeScreen({
+    super.key,
+    this.layoutMode = 'grid',
+  });
 
   @override
   State<HomeScreen> createState() => HomeScreenState();
@@ -44,7 +49,8 @@ class HomeScreenState extends State<HomeScreen> {
   WebSocketChannel? _eventChannel;
   Timer? _reconnectTimer;
   bool _isWsConnected = false;
-  bool _isCompactMode = false;
+  
+  bool get _isCompactMode => widget.layoutMode == 'list';
 
   @override
   void initState() {
@@ -712,30 +718,6 @@ class HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Material(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[800]
-                    : Colors.grey[200],
-                borderRadius: BorderRadius.circular(16.0),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16.0),
-                  onTap: () {
-                    setState(() {
-                      _isCompactMode = !_isCompactMode;
-                    });
-                  },
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      _isCompactMode ? Icons.view_agenda_outlined : Icons.view_list,
-                      color: Theme.of(context).iconTheme.color,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -773,198 +755,52 @@ class HomeScreenState extends State<HomeScreen> {
           Expanded(child: Center(child: Text(t.msgNoContainers)))
         else
           Expanded(
-            child: Scrollbar(
-              controller: _scrollController,
-              thumbVisibility: true,
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: _filteredContainers.length,
-                itemBuilder: (context, index) {
-                  final container = _filteredContainers[index];
-                  if (_isCompactMode) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Theme.of(context).dividerColor,
-                            width: 0.5,
-                          ),
-                        ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 600;
+                
+                if (isWide && !_isCompactMode) {
+                  int crossAxisCount = constraints.maxWidth >= 900 ? 3 : 2;
+                  return Scrollbar(
+                    controller: _scrollController,
+                    thumbVisibility: true,
+                    child: GridView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        mainAxisExtent: 190,
                       ),
-                      child: ListTile(
-                        dense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 0,
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ContainerDetailsScreen(
-                                containerId: container.id,
-                                containerName: container.name,
-                                apiUrl: _currentApiUrl,
-                                apiKey: _currentApiKey,
-                                ignoreSsl: _currentIgnoreSsl,
-                                isSelf: container.isSelf,
-                              ),
-                            ),
-                          );
-                        },
-                        title: Text(
-                          container.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(
-                              container.status,
-                            ).withAlpha(30),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: _getStatusColor(container.status),
-                            ),
-                          ),
-                          child: Text(
-                            container.status.toLowerCase(),
-                            style: TextStyle(
-                              color: _getStatusColor(container.status),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ContainerDetailsScreen(
-                              containerId: container.id,
-                              containerName: container.name,
-                              apiUrl: _currentApiUrl,
-                              apiKey: _currentApiKey,
-                              ignoreSsl: _currentIgnoreSsl,
-                              isSelf: container.isSelf,
-                            ),
-                          ),
+                      itemCount: _filteredContainers.length,
+                      itemBuilder: (context, index) {
+                        return _buildContainerCard(
+                          _filteredContainers[index],
+                          t,
+                          margin: EdgeInsets.zero,
                         );
                       },
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        container.name,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: _getStatusColor(
-                                            container.status,
-                                          ).withAlpha(30),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                          border: Border.all(
-                                            color: _getStatusColor(
-                                              container.status,
-                                            ),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          container.status.toLowerCase(),
-                                          style: TextStyle(
-                                            color: _getStatusColor(
-                                              container.status,
-                                            ),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.article_outlined),
-                                  tooltip: 'Logs',
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            ContainerLogsScreen(
-                                              containerId: container.id,
-                                              containerName: container.name,
-                                              apiUrl: _currentApiUrl,
-                                              apiKey: _currentApiKey,
-                                              ignoreSsl: _currentIgnoreSsl,
-                                            ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.more_vert),
-                                  onPressed: () =>
-                                      _showContainerActions(container),
-                                ),
-                              ],
-                            ),
-                            const Divider(height: 24),
-                            if (container.stack.isNotEmpty) ...[
-                              _buildInfoRow(t.labelStack, container.stack),
-                              const SizedBox(height: 8),
-                            ],
-                            if (container.image.isNotEmpty) ...[
-                              _buildInfoRow(t.labelImage, container.image),
-                              const SizedBox(height: 8),
-                            ],
-                            if (container.ports.isNotEmpty) ...[
-                              _buildInfoRow(t.labelPorts, container.ports),
-                            ],
-                          ],
-                        ),
-                      ),
                     ),
                   );
-                },
-              ),
+                }
+
+                return Scrollbar(
+                  controller: _scrollController,
+                  thumbVisibility: true,
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _filteredContainers.length,
+                    itemBuilder: (context, index) {
+                      final container = _filteredContainers[index];
+                      if (_isCompactMode) {
+                        return _buildContainerTile(container, t);
+                      }
+                      return _buildContainerCard(container, t);
+                    },
+                  ),
+                );
+              },
             ),
           ),
       ],
@@ -1197,6 +1033,192 @@ class HomeScreenState extends State<HomeScreen> {
               const Spacer(),
               Icon(Icons.chevron_right, color: Colors.grey[400], size: 20),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContainerTile(DockerContainer container, AppLocalizations t) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: ListTile(
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 0,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ContainerDetailsScreen(
+                containerId: container.id,
+                containerName: container.name,
+                apiUrl: _currentApiUrl,
+                apiKey: _currentApiKey,
+                ignoreSsl: _currentIgnoreSsl,
+                isSelf: container.isSelf,
+              ),
+            ),
+          );
+        },
+        title: Text(
+          container.name,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 2,
+          ),
+          decoration: BoxDecoration(
+            color: _getStatusColor(
+              container.status,
+            ).withAlpha(30),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: _getStatusColor(container.status),
+            ),
+          ),
+          child: Text(
+            container.status.toLowerCase(),
+            style: TextStyle(
+              color: _getStatusColor(container.status),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContainerCard(
+    DockerContainer container,
+    AppLocalizations t, {
+    EdgeInsetsGeometry? margin,
+  }) {
+    return Card(
+      margin: margin ??
+          const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ContainerDetailsScreen(
+                containerId: container.id,
+                containerName: container.name,
+                apiUrl: _currentApiUrl,
+                apiKey: _currentApiKey,
+                ignoreSsl: _currentIgnoreSsl,
+                isSelf: container.isSelf,
+              ),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            container.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(
+                                container.status,
+                              ).withAlpha(30),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: _getStatusColor(container.status),
+                              ),
+                            ),
+                            child: Text(
+                              container.status.toLowerCase(),
+                              style: TextStyle(
+                                color: _getStatusColor(container.status),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.article_outlined),
+                      tooltip: 'Logs',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ContainerLogsScreen(
+                              containerId: container.id,
+                              containerName: container.name,
+                              apiUrl: _currentApiUrl,
+                              apiKey: _currentApiKey,
+                              ignoreSsl: _currentIgnoreSsl,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.more_vert),
+                      onPressed: () => _showContainerActions(container),
+                    ),
+                  ],
+                ),
+                const Divider(height: 16),
+                if (container.stack.isNotEmpty) ...[
+                  _buildInfoRow(t.labelStack, container.stack),
+                  const SizedBox(height: 4),
+                ],
+                if (container.image.isNotEmpty) ...[
+                  _buildInfoRow(t.labelImage, container.image),
+                  const SizedBox(height: 4),
+                ],
+                if (container.ports.isNotEmpty) ...[
+                  _buildInfoRow(t.labelPorts, container.ports),
+                ],
+              ],
+            ),
           ),
         ),
       ),
