@@ -76,13 +76,11 @@ class ServerDashboardData {
 class DashboardScreen extends StatefulWidget {
   final VoidCallback? onSwitchToContainers;
   final VoidCallback? onSwitchToImages;
-  final String layoutMode;
 
   const DashboardScreen({
     super.key,
     this.onSwitchToContainers,
     this.onSwitchToImages,
-    this.layoutMode = 'auto',
   });
 
   @override
@@ -306,16 +304,8 @@ class DashboardScreenState extends State<DashboardScreen> {
                   onRefresh: _loadData,
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      bool useGrid = false;
-                      
-                      if (widget.layoutMode == 'grid') {
-                        useGrid = true;
-                      } else if (widget.layoutMode == 'list') {
-                        useGrid = false;
-                      } else {
-                        // Auto mode
-                        useGrid = constraints.maxWidth >= 600;
-                      }
+                      // Auto mode
+                      bool useGrid = constraints.maxWidth >= 600;
 
                       if (!useGrid) {
                         return ListView.builder(

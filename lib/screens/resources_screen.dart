@@ -57,52 +57,113 @@ class ResourcesScreen extends StatelessWidget {
       ),
     ];
 
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: items.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: item.color.withValues(alpha: .1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(item.icon, color: item.color, size: 28),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 600;
+
+        if (isWide) {
+          int crossAxisCount = constraints.maxWidth >= 900 ? 3 : 2;
+          return GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.5,
             ),
-            title: Text(
-              item.title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Scaffold(
-                    appBar: AppBar(
-                      title: Text(item.title),
-                    ),
-                    body: item.screen,
-                    floatingActionButton: item.hasFab
-                        ? FloatingActionButton(
-                            onPressed: () => _showPullImageDialog(context),
-                            child: const Icon(Icons.add),
-                          )
-                        : null,
-                  ),
-                ),
-              );
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return _buildGridItem(context, items[index]);
             },
-          ),
+          );
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: items.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            return _buildListItem(context, items[index]);
+          },
         );
       },
+    );
+  }
+
+  Widget _buildListItem(BuildContext context, _ResourceItem item) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: item.color.withValues(alpha: .1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(item.icon, color: item.color, size: 28),
+        ),
+        title: Text(
+          item.title,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        onTap: () => _navigateToScreen(context, item),
+      ),
+    );
+  }
+
+  Widget _buildGridItem(BuildContext context, _ResourceItem item) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () => _navigateToScreen(context, item),
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: item.color.withValues(alpha: .1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(item.icon, color: item.color, size: 48),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              item.title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToScreen(BuildContext context, _ResourceItem item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text(item.title),
+          ),
+          body: item.screen,
+          floatingActionButton: item.hasFab
+              ? FloatingActionButton(
+                  onPressed: () => _showPullImageDialog(context),
+                  child: const Icon(Icons.add),
+                )
+              : null,
+        ),
+      ),
     );
   }
 

@@ -18,7 +18,7 @@ class MainTabScreen extends StatefulWidget {
 class _MainTabScreenState extends State<MainTabScreen> {
   int _selectedIndex = 0;
   bool _settingsChanged = false;
-  String _dashboardLayoutMode = 'auto'; // 'auto', 'list', 'grid'
+  // String _dashboardLayoutMode = 'auto'; // 'auto', 'list', 'grid' - Removed
   String _containerLayoutMode = 'grid'; // 'list', 'grid'
 
   final GlobalKey<DashboardScreenState> _dashboardKey =
@@ -41,31 +41,17 @@ class _MainTabScreenState extends State<MainTabScreen> {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
     setState(() {
-      _dashboardLayoutMode = prefs.getString('dashboard_layout_mode') ?? 'auto';
+      // _dashboardLayoutMode = prefs.getString('dashboard_layout_mode') ?? 'auto';
       _containerLayoutMode = prefs.getString('container_layout_mode') ?? 'grid';
     });
   }
 
   Future<void> _toggleLayoutMode() async {
-    final screenWidth = MediaQuery.of(context).size.width;
+    // final screenWidth = MediaQuery.of(context).size.width;
     final prefs = await SharedPreferences.getInstance();
-    final isWide = screenWidth >= 600;
+    // final isWide = screenWidth >= 600;
 
-    if (_selectedIndex == 0) {
-      // Dashboard toggle
-      final effectiveMode = _dashboardLayoutMode == 'auto' 
-          ? (isWide ? 'grid' : 'list') 
-          : _dashboardLayoutMode;
-
-      String newMode = effectiveMode == 'grid' ? 'list' : 'grid';
-      
-      await prefs.setString('dashboard_layout_mode', newMode);
-      
-      if (!mounted) return;
-      setState(() {
-        _dashboardLayoutMode = newMode;
-      });
-    } else if (_selectedIndex == 1) {
+    if (_selectedIndex == 1) {
       // Container toggle
       // For containers, we only have 'grid' (normal) or 'list' (compact)
       // 'grid' means Card view (GridView on wide, Card List on narrow)
@@ -118,15 +104,11 @@ class _MainTabScreenState extends State<MainTabScreen> {
     final t = AppLocalizations.of(context)!;
     
     // Calculate effective layout mode for UI display
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isWide = screenWidth >= 600;
+    // final screenWidth = MediaQuery.of(context).size.width;
+    // final isWide = screenWidth >= 600;
     
     String currentEffectiveMode = 'list';
-    if (_selectedIndex == 0) {
-      currentEffectiveMode = _dashboardLayoutMode == 'auto' 
-          ? (isWide ? 'grid' : 'list') 
-          : _dashboardLayoutMode;
-    } else if (_selectedIndex == 1) {
+    if (_selectedIndex == 1) {
       currentEffectiveMode = _containerLayoutMode;
     }
 
@@ -134,7 +116,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
       appBar: AppBar(
         title: Text(_getTitle(t)),
         actions: [
-          if (_selectedIndex == 0 || _selectedIndex == 1) // Layout toggle for Dashboard & Containers
+          if (_selectedIndex == 1) // Layout toggle for Containers
             IconButton(
               icon: Icon(currentEffectiveMode == 'grid' 
                   ? Icons.view_list 
@@ -185,7 +167,6 @@ class _MainTabScreenState extends State<MainTabScreen> {
         children: [
           DashboardScreen(
             key: _dashboardKey,
-            layoutMode: _dashboardLayoutMode,
             onSwitchToContainers: () {
               // Refresh containers because server might have changed
               _containersKey.currentState?.refreshAfterSettings();

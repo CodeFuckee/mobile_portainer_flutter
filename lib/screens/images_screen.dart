@@ -19,11 +19,12 @@ class ImagesScreenState extends State<ImagesScreen> {
   List<DockerImage> _allImages = [];
   List<DockerImage> _filteredImages = [];
   bool _isLoading = false;
-  bool _isCompactMode = false;
+  bool _isGridMode = true;
   String? _error;
   String _currentApiUrl = '';
   String _currentApiKey = '';
   bool _currentIgnoreSsl = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -34,6 +35,7 @@ class ImagesScreenState extends State<ImagesScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -42,11 +44,16 @@ class ImagesScreenState extends State<ImagesScreen> {
     final url = prefs.getString('docker_api_url') ?? 'http://10.0.2.2:2375';
     final apiKey = prefs.getString('docker_api_key') ?? '';
     final ignoreSsl = prefs.getString('docker_ignore_ssl') == 'true';
-    setState(() {
-      _currentApiUrl = url;
-      _currentApiKey = apiKey;
-      _currentIgnoreSsl = ignoreSsl;
-    });
+    final isGridMode = prefs.getBool('images_grid_mode') ?? true;
+    
+    if (mounted) {
+      setState(() {
+        _currentApiUrl = url;
+        _currentApiKey = apiKey;
+        _currentIgnoreSsl = ignoreSsl;
+        _isGridMode = isGridMode;
+      });
+    }
     _fetchImages();
   }
 
@@ -171,6 +178,17 @@ class ImagesScreenState extends State<ImagesScreen> {
     }
   }
 
+  Future<void> _toggleLayoutMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final newMode = !_isGridMode;
+    await prefs.setBool('images_grid_mode', newMode);
+    if (mounted) {
+      setState(() {
+        _isGridMode = newMode;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -215,18 +233,14 @@ class ImagesScreenState extends State<ImagesScreen> {
                 borderRadius: BorderRadius.circular(16.0),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16.0),
-                  onTap: () {
-                    setState(() {
-                      _isCompactMode = !_isCompactMode;
-                    });
-                  },
+                  onTap: _toggleLayoutMode,
                   child: Container(
                     width: 50,
                     height: 50,
                     alignment: Alignment.center,
                     child: Icon(
-                      _isCompactMode
-                          ? Icons.view_agenda_outlined
+                      !_isGridMode
+                          ? Icons.grid_view
                           : Icons.view_list,
                       color: Theme.of(context).iconTheme.color,
                     ),
@@ -276,64 +290,192 @@ class ImagesScreenState extends State<ImagesScreen> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: _fetchImages,
-              child: ListView.builder(
-                itemCount: _filteredImages.length,
-                itemBuilder: (context, index) {
-                  final image = _filteredImages[index];
-                  final tags = image.repoTags.isNotEmpty ? image.repoTags.join(', ') : '<none>';
-                  String shortId = image.id;
-                  if (shortId.startsWith('sha256:')) {
-                     if (shortId.length > 7) {
-                       shortId = shortId.substring(7);
-                     }
-                  }
-                  if (shortId.length > 12) {
-                    shortId = shortId.substring(0, 12);
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 600;
+                  
+                  if (isWide && _isGridMode) {
+                    int crossAxisCount = constraints.maxWidth >= 900 ? 3 : 2;
+                    return Scrollbar(
+                      controller: _scrollController,
+                      thumbVisibility: true,
+                      child: GridView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          mainAxisExtent: 180,
+                        ),
+                        itemCount: _filteredImages.length,
+                        itemBuilder: (context, index) {
+                          final image = _filteredImages[index];
+                          final tags = image.repoTags.isNotEmpty ? image.repoTags.join(', ') : '<none>';
+                          String shortId = image.id;
+                          if (shortId.startsWith('sha256:')) {
+                             if (shortId.length > 7) {
+                               shortId = shortId.substring(7);
+                             }
+                          }
+                          if (shortId.length > 12) {
+                            shortId = shortId.substring(0, 12);
+                          }
+                          return _buildImageCard(image, tags, shortId, t, margin: EdgeInsets.zero, isGrid: true);
+                        },
+                      ),
+                    );
                   }
 
-                  if (_isCompactMode) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Theme.of(context).dividerColor,
-                            width: 0.5,
-                          ),
-                        ),
-                      ),
-                      child: ListTile(
-                        dense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 0,
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ImageDetailsScreen(
-                                imageId: image.id,
-                                imageName: tags,
-                                apiUrl: _currentApiUrl,
-                                apiKey: _currentApiKey,
-                                ignoreSsl: _currentIgnoreSsl,
+                  return Scrollbar(
+                    controller: _scrollController,
+                    thumbVisibility: true,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      itemCount: _filteredImages.length,
+                      itemBuilder: (context, index) {
+                        final image = _filteredImages[index];
+                        final tags = image.repoTags.isNotEmpty ? image.repoTags.join(', ') : '<none>';
+                        String shortId = image.id;
+                        if (shortId.startsWith('sha256:')) {
+                           if (shortId.length > 7) {
+                             shortId = shortId.substring(7);
+                           }
+                        }
+                        if (shortId.length > 12) {
+                          shortId = shortId.substring(0, 12);
+                        }
+
+                        if (!_isGridMode) {
+                          return _buildImageTile(image, tags, shortId, t);
+                        }
+                        return _buildImageCard(image, tags, shortId, t);
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildImageTile(DockerImage image, String tags, String shortId, AppLocalizations t) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: ListTile(
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 0,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ImageDetailsScreen(
+                imageId: image.id,
+                imageName: tags,
+                apiUrl: _currentApiUrl,
+                apiKey: _currentApiKey,
+                ignoreSsl: _currentIgnoreSsl,
+              ),
+            ),
+          );
+        },
+        title: Text(
+          tags,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (image.inUse)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: .1),
+                  border: Border.all(color: Colors.green),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  t.labelInUse,
+                  style: const TextStyle(
+                    color: Colors.green,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => _confirmDelete(image),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageCard(DockerImage image, String tags, String shortId, AppLocalizations t, {EdgeInsetsGeometry? margin, bool isGrid = false}) {
+    return Card(
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ImageDetailsScreen(
+                imageId: image.id,
+                imageName: tags,
+                apiUrl: _currentApiUrl,
+                apiKey: _currentApiKey,
+                ignoreSsl: _currentIgnoreSsl,
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                tags,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          );
-                        },
-                        title: Text(
-                          tags,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
                             if (image.inUse)
                               Container(
+                                margin: const EdgeInsets.only(left: 8),
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.green.withValues(alpha: .1),
@@ -350,111 +492,37 @@ class ImagesScreenState extends State<ImagesScreen> {
                                 ),
                               ),
                             IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(Icons.delete, size: 20, color: Colors.red),
                               onPressed: () => _confirmDelete(image),
                             ),
                           ],
                         ),
-                      ),
-                    );
-                  }
-
-                  return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ImageDetailsScreen(
-                              imageId: image.id,
-                              imageName: tags,
-                              apiUrl: _currentApiUrl,
-                              apiKey: _currentApiKey,
-                              ignoreSsl: _currentIgnoreSsl,
-                            ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'ID: $shortId',
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodySmall?.color,
+                            fontFamily: 'monospace',
                           ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(12), // Match default Card border radius
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              tags,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                          if (image.inUse)
-                                            Container(
-                                              margin: const EdgeInsets.only(left: 8),
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: Colors.green.withValues(alpha: .1),
-                                                border: Border.all(color: Colors.green),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                t.labelInUse,
-                                                style: const TextStyle(
-                                                  color: Colors.green,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete, size: 20, color: Colors.red),
-                                            onPressed: () => _confirmDelete(image),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'ID: $shortId',
-                                        style: TextStyle(
-                                          color: Theme.of(context).textTheme.bodySmall?.color,
-                                          fontFamily: 'monospace',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Divider(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                _buildInfoItem(Icons.data_usage, _formatSize(image.size)),
-                                _buildInfoItem(Icons.access_time, _formatDate(image.created)),
-                              ],
-                            ),
-                          ],
                         ),
-                      ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
-            ),
+              if (isGrid) const Spacer() else const SizedBox(height: 12),
+              const Divider(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildInfoItem(Icons.data_usage, _formatSize(image.size)),
+                  _buildInfoItem(Icons.access_time, _formatDate(image.created)),
+                ],
+              ),
+            ],
           ),
-      ],
+        ),
+      ),
     );
   }
 
