@@ -370,6 +370,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errCheckUpdate => 'Failed to check for updates';
 
   @override
+  String get msgOpeningBrowserForDownload =>
+      'Opening browser to download update...';
+
+  @override
+  String get errOpenDownloadUrl => 'Failed to open download link';
+
+  @override
   String get actionUpdate => 'Update';
 
   @override

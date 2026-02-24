@@ -788,6 +788,18 @@ abstract class AppLocalizations {
   /// **'Failed to check for updates'**
   String get errCheckUpdate;
 
+  /// No description provided for @msgOpeningBrowserForDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening browser to download update...'**
+  String get msgOpeningBrowserForDownload;
+
+  /// No description provided for @errOpenDownloadUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to open download link'**
+  String get errOpenDownloadUrl;
+
   /// No description provided for @actionUpdate.
   ///
   /// In en, this message translates to:

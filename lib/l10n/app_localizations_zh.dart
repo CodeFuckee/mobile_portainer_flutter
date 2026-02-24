@@ -366,6 +366,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errCheckUpdate => '检查更新失败';
 
   @override
+  String get msgOpeningBrowserForDownload => '正在打开浏览器下载安装包...';
+
+  @override
+  String get errOpenDownloadUrl => '无法打开下载链接';
+
+  @override
   String get actionUpdate => '立即更新';
 
   @override

@@ -77,7 +77,7 @@ class UpdateService {
     final t = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text('${t.titleNewVersion} $version'),
         content: SingleChildScrollView(
           child: Column(
@@ -90,13 +90,13 @@ class UpdateService {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(t.actionCancel),
           ),
           FilledButton(
             onPressed: () {
-              Navigator.pop(context);
-              _downloadAndInstall(url);
+              Navigator.pop(dialogContext);
+              _downloadAndInstall(context, url);
             },
             child: Text(t.actionUpdate),
           ),
@@ -105,10 +105,28 @@ class UpdateService {
     );
   }
 
-  static Future<void> _downloadAndInstall(String url) async {
+  static Future<void> _downloadAndInstall(
+      BuildContext context, String url) async {
+    final t = AppLocalizations.of(context)!;
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    NotifyUtils.showNotify(context, t.msgOpeningBrowserForDownload);
+
+    try {
+      bool launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+      if (!launched) {
+        launched = await launchUrl(uri);
+      }
+
+      if (!launched && context.mounted) {
+        NotifyUtils.showNotify(context, t.errOpenDownloadUrl);
+      }
+    } catch (e) {
+      debugPrint('Error launching update url: $e');
+      if (context.mounted) {
+        NotifyUtils.showNotify(context, t.errOpenDownloadUrl);
+      }
     }
   }
 }

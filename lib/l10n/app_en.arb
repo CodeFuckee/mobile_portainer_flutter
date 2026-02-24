@@ -114,6 +114,8 @@
   "titleNewVersion": "New Version Available",
   "msgNoUpdate": "Your app is up to date",
   "errCheckUpdate": "Failed to check for updates",
+  "msgOpeningBrowserForDownload": "Opening browser to download update...",
+  "errOpenDownloadUrl": "Failed to open download link",
   "actionUpdate": "Update",
   "labelGithub": "GitHub Repository",
   "buttonScanQr": "Scan QR Code",
