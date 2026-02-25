@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mobile_portainer_flutter/l10n/app_localizations.dart';
 import 'package:mobile_portainer_flutter/utils/notify_utils.dart';
 import 'dart:async';
 import '../services/docker_service.dart';
@@ -30,6 +31,7 @@ class _ContainerLogsScreenState extends State<ContainerLogsScreen> {
   List<String> _logLines = [];
   bool _isLoading = true;
   String? _error;
+  bool _isPaused = false;
   
   // Search state
   bool _isSearching = false;
@@ -54,7 +56,9 @@ class _ContainerLogsScreenState extends State<ContainerLogsScreen> {
     super.initState();
     _fetchLogs();
     _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      _fetchLogs(isBackground: true);
+      if (!_isPaused) {
+        _fetchLogs(isBackground: true);
+      }
     });
   }
 
@@ -217,6 +221,7 @@ class _ContainerLogsScreenState extends State<ContainerLogsScreen> {
   }
 
   List<Widget> _buildActionButtons() {
+    final t = AppLocalizations.of(context)!;
     return [
       IconButton(
         icon: const Icon(Icons.search),
@@ -228,6 +233,18 @@ class _ContainerLogsScreenState extends State<ContainerLogsScreen> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _searchFocusNode.requestFocus();
           });
+        },
+      ),
+      IconButton(
+        icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
+        tooltip: _isPaused ? t.actionResume : t.actionPause,
+        onPressed: () {
+          setState(() {
+            _isPaused = !_isPaused;
+          });
+          if (!_isPaused) {
+            _fetchLogs();
+          }
         },
       ),
       IconButton(
